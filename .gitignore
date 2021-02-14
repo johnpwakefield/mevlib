@@ -1,0 +1,9 @@
+
+
+# images directory
+img/*
+
+# python caches
+__pycache__
+
+
