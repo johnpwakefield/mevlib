@@ -69,12 +69,12 @@ for i, (R, H) in enumerate(zip(Rs, Hs)):
         np.sqrt(Lams[0]),
         R, H, nexact, kexact, zero_cache=zc
     )
-fig1, axs1 = plt.subplots(1, 1)
-axs1.loglog(Hs / Rs, plotdata_single[0,:], 'k-')
-axs1.set_xlabel(r"\( H / R \)")
-axs1.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-axs1.grid()
-axs1.set_ylabel("Effectiveness Factor")
+fig3, axs3 = plt.subplots(1, 1)
+axs3.loglog(Hs / Rs, plotdata_single[0,:], 'k-')
+axs3.set_xlabel(r"\( H / R \)")
+axs3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+axs3.grid()
+axs3.set_ylabel("Effectiveness Factor")
 
 plotdata_sepsums_1 = np.empty((1, len(Hs)))
 plotdata_sepsums_2 = np.empty((1, len(Hs)))
@@ -109,12 +109,12 @@ for i, ax in enumerate(axs2):
 
 
 if True:
-    for i, fig in enumerate([fig1, fig2]):
+    for i, fig in enumerate([fig1, fig2, fig3]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
-            fig.savefig("img/volume-{}.{}".format("fig{}".format(i+1), ext))
+            fig.savefig("img/efffactor-{}.{}".format("fig{}".format(i+1), ext))
 else:
-    for fig in [fig1, fig2]:
+    for fig in [fig1, fig2, fig3]:
         fig.tight_layout()
     plt.show()
 

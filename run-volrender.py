@@ -62,7 +62,7 @@ fig8 = go.Figure(data=[
 
 if True:
     for i, fig in enumerate([fig7, fig8]):
-        fig.write_html("img/graphic-fig{}.html".format(7+i))
+        fig.write_html("img/volrender-fig{}.html".format(7+i))
 else:
     for fig in [fig7, fig8]:
         fig.show()

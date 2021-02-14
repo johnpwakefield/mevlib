@@ -61,7 +61,7 @@ fig6.colorbar(sc, ax=ax6)
 if True:
     fig6.tight_layout()
     for ext in ['svg', 'pdf']:
-        fig6.savefig("img/run-ptcheck.{}".format(ext))
+        fig6.savefig("img/ptcheck.{}".format(ext))
 else:
     plt.show()
 

@@ -57,11 +57,11 @@ for i in range(2):
 
 
 
-if False:
+if True:
     for i, fig in enumerate([fig1]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
-            fig.savefig("img/volume-{}.{}".format("fig{}".format(i+1), ext))
+            fig.savefig("img/sumconv-{}.{}".format("fig{}".format(i+1), ext))
 else:
     plt.show()
 
