@@ -70,7 +70,7 @@ for i, (R, H) in enumerate(zip(Rs, Hs)):
         R, H, nexact, kexact, zero_cache=zc
     )
 fig3, axs3 = plt.subplots(1, 1)
-axs3.loglog(Hs / Rs, plotdata_single[0,:], 'k-')
+axs3.semilogx(Hs / Rs, plotdata_single[0,:], 'k-')
 axs3.set_xlabel(r"\( H / R \)")
 axs3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 axs3.grid()
@@ -82,8 +82,8 @@ for i, (R, H) in enumerate(zip(Rs, Hs)):
     plotdata_sepsums_1[:,i] = s1(np.sqrt(Lams[0]), R, H, nexact)
     plotdata_sepsums_2[:,i] = s2(np.sqrt(Lams[0]), R, H, kexact, zero_cache=zc)
 fig1, axs1 = plt.subplots(1, 1)
-axs1.loglog(Hs / Rs, plotdata_sepsums_1[0,:], 'r-', label="s1")
-axs1.loglog(Hs / Rs, plotdata_sepsums_2[0,:], 'b-', label="s2")
+axs1.semilogx(Hs / Rs, plotdata_sepsums_1[0,:], 'r-', label=r"\( A_N \)")
+axs1.semilogx(Hs / Rs, plotdata_sepsums_2[0,:], 'b-', label=r"\( B_K \)")
 axs1.set_xlabel(r"\( H / R \)")
 axs1.legend()
 axs1.grid()
@@ -97,7 +97,7 @@ fig2, axs2 = plt.subplots(2, 3)
 axs2 = axs2.flatten()
 for i, ax in enumerate(axs2):
     component = r"\( \eta_{} \)".format(i+1)
-    ax.loglog(
+    ax.semilogx(
         Hs / Rs, plotdata_multistage[i,:],
         'C{}-'.format(i), label=component
     )
