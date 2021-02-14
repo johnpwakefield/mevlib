@@ -53,14 +53,15 @@ bdry = [1.0, 0.8, 0.6, 0.4, 0.2, 0.0]
 equilibrium = R * Diagonal([Lam[i] == 0.0 ? 1.0 : 0.0 for i in 1:6]) * (R \ bdry)
 
 
-println("")
+println("\nkijs")
 display(kijs)
-println("")
+println("\nnB")
 display(nB)
-println("")
+println("\nR")
 display(R)
-println("")
+println("\nequilibrium")
 display(equilibrium)
-println("")
+println("\ninitsum = $(sum(bdry)), eqsum = $(sum(equilibrium))")
+println("\n")
 
 
