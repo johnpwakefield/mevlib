@@ -48,7 +48,7 @@ def s1(a, R, H, trunc, bratcutoff=400.0):
     gns = gn(a, H, ns)
     # the ratio I1/I0 tends to 1 (inf/inf) very quickly
     brat = np.where(gns * R < bratcutoff, i1(gns * R) / i0(gns * R), 1.0)
-    return sum(16.0 * R * H / (np.pi * gns * (2 * ns + 1)**2) * brat)
+    return sum(16.0 / (np.pi**2 * R * gns * (2 * ns + 1)**2) * brat)
 
 def s2(a, R, H, trunc, zero_cache=None):
     if zero_cache is not None and len(zero_cache) >= trunc:
@@ -56,7 +56,7 @@ def s2(a, R, H, trunc, zero_cache=None):
     else:
         alpha = jn_zeros(0, trunc)
     lnks = ln(a, R, alpha)
-    return 8.0 * np.pi * R**2 * sum(np.tanh(lnks * H / 2) / (lnks * alpha**2))
+    return 8.0 * sum(np.tanh(lnks * H / 2) / (H * lnks * alpha**2))
 
 def s(a, R, H, ntrunc, ktrunc, zero_cache=None):
     s1val = s1(a, R, H, ntrunc)
