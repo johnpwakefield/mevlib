@@ -37,7 +37,7 @@ EVsinv = np.linalg.inv(EVs)
 Lams = np.diagonal(B)
 
 
-nexact, kexact = 12, 18
+nexact, kexact = 32, 32
 zc = jn_zeros(0, max(nexact, kexact))
 
 bdrycond = np.array([1.0, 0.8, 0.6, 0.4, 0.2, 0.2])
@@ -93,7 +93,7 @@ for i, (R, H) in enumerate(zip(Rs, Hs)):
     plotdata_multistage[:,i] = eff_factor(
         R, H, nexact, kexact, bdrycond, zero_cache=zc
     )
-fig2, axs2 = plt.subplots(2, 3)
+fig2, axs2 = plt.subplots(2, 3, figsize=(8.0, 6.0))
 axs2 = axs2.flatten()
 for i, ax in enumerate(axs2):
     component = r"\( \eta_{} \)".format(i+1)
