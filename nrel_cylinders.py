@@ -35,6 +35,38 @@ def u(a, R, H, ntrunc, ktrunc, r, z, zero_cache=None):
     )
 
 
+# residual pointwise
+
+def u1laplacian(a, R, H, trunc, r, z):
+    def gn(n):
+        return np.sqrt(a**2 + (np.pi / H * (2 * n + 1))**2)
+    return sum([
+        4.0 * np.pi * (2 * n + 1) * gn(n)**2 / H**2
+        * np.sin(np.pi * (2 * n + 1) * z / H)
+        * i0(gn(n) * r) / i0(gn(n) * R)
+        for n in range(trunc-1, -1, -1)
+    ])
+
+def u2laplacian(a, R, H, trunc, r, z):
+    alpha = jn_zeros(0, trunc)
+    def lk(k):
+        return np.sqrt(a**2 + (alpha[k-1] / R)**2)
+    return - 2.0 / R**2 * sum([
+        lk(k)**2 * alpha[k-1]
+        * np.cosh(lk(k) * (z - H / 2)) / np.cosh(lk(k) * H / 2)
+        * j0(alpha[k-1] / R * r) / j1(alpha[k-1])
+        for k in range(trunc, 0, -1)
+    ])
+
+def uresidual(a, R, H, ntrunc, ktrunc, r, z):
+    return (
+        + u1laplacian(a, R, H, ntrunc, r, z)
+        - a**2 * u1(a, R, H, ntrunc, r, z)
+        + u2laplacian(a, R, H, ntrunc, r, z)
+        - a**2 * u2(a, R, H, ktrunc, r, z)
+    )
+
+
 # solution integrated over domain
 
 def gn(a, H, n):
