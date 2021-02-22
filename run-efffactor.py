@@ -76,6 +76,16 @@ axs3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 axs3.grid()
 axs3.set_ylabel("Effectiveness Factor")
 
+plotdata_check = np.empty((1, len(Hs)))
+for i, (R, H) in enumerate(zip(Rs, Hs)):
+    plotdata_check[:,i] = s(0.0, R, H, nexact, kexact, zero_cache=zc)
+fig5, axs5 = plt.subplots(1, 1)
+axs5.semilogx(Hs / Rs, plotdata_check[0,:], 'k-')
+axs5.set_xlabel(r"\( H / R \)")
+axs5.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+axs5.grid()
+axs5.set_ylabel("Effectiveness Factor")
+
 plotdata_sepsums_1 = np.empty((1, len(Hs)))
 plotdata_sepsums_2 = np.empty((1, len(Hs)))
 for i, (R, H) in enumerate(zip(Rs, Hs)):
@@ -107,9 +117,31 @@ for i, ax in enumerate(axs2):
     ax.set_ylabel("Effectiveness Factor")
     ax.grid()
 
+maxterms = 20
+gammas = [0.05, 1.0, 20.0]
+Rs = [2.0, 40.0]
+phi = 5.0
+plotdata_numterms = np.empty((len(Rs),maxterms,len(gammas)))
+for i, gamma in enumerate(gammas):
+    for j in range(maxterms):
+        for k, R in enumerate(Rs):
+            plotdata_numterms[k,j,i] = s(
+                phi / R, R, 2.0 * R * gamma, j+1, j+1, zero_cache=zc
+            )
+fig4, axs4 = plt.subplots(len(Rs), len(gammas))
+for k, R in enumerate(Rs):
+    for i, gamma in enumerate(gammas):
+        axs4[k,i].semilogy(
+            np.arange(maxterms) + 1, plotdata_numterms[k,:,i], 'k.'
+        )
+        axs4[k,i].set_title(r"\( \gamma = {} \)".format(gamma))
+        axs4[k,i].set_xlabel(r"Number of Terms")
+        axs4[k,i].set_ylabel(r"Effectiveness Factor")
+        axs4[k,i].set_ylim((0.1, 1.0))
 
-if True:
-    for i, fig in enumerate([fig1, fig2, fig3]):
+
+if False:
+    for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
             fig.savefig("img/efffactor-{}.{}".format("fig{}".format(i+1), ext))

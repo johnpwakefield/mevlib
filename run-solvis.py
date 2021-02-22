@@ -5,7 +5,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from nrel_cylinders import u1, u2, u
+from nrel_cylinders import u1, u2
 
 
 plt.rc('text', usetex=True)
@@ -91,7 +91,7 @@ if True:
     for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
-            fig.savefig("img/solvis-{}.{}".format("fig{}".format(i+1), ext))
+            fig.savefig("img/graphic-{}.{}".format("fig{}".format(i+1), ext))
 else:
     plt.show()
 
