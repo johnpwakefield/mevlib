@@ -10,8 +10,9 @@ from nrel_cylinders import s, s1, s2
 from scipy.special import jn_zeros
 
 
+plt.rc('font', size=16)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=12)
+plt.rc('axes', labelsize=20)
 
 
 B = - np.array([
@@ -37,10 +38,10 @@ EVsinv = np.linalg.inv(EVs)
 Lams = np.diagonal(B)
 
 
-nexact, kexact = 32, 32
+nexact, kexact = 128, 128
 zc = jn_zeros(0, max(nexact, kexact))
 
-bdrycond = np.array([1.0, 0.8, 0.6, 0.4, 0.2, 0.2])
+bdrycond = np.array([1.0, 0.7, 0.7, 0.1, 0.1, 0.1])
 
 
 def eff_factor(R, H, ntrunc, ktrunc, Cbdry, zero_cache=None):
@@ -62,16 +63,22 @@ V = np.pi * 2.0**8
 Rs = (V / (np.pi * ratios))**(1.0/3)
 Hs = ratios * Rs
 
-
-plotdata_single = np.empty((1, len(Hs)))
-for i, (R, H) in enumerate(zip(Rs, Hs)):
-    plotdata_single[:,i] = s(
-        np.sqrt(Lams[0]),
-        R, H, nexact, kexact, zero_cache=zc
-    )
+phi2s = [10.0, 1.0, 0.1, 0.0]
+plotdata_single = np.empty((len(phi2s), len(Hs)))
+for k, phi2 in enumerate(phi2s):
+    for i, (R, H) in enumerate(zip(Rs, Hs)):
+        plotdata_single[k,i] = s(
+            np.sqrt(phi2),
+            R, H, nexact, kexact, zero_cache=zc
+        )
 fig3, axs3 = plt.subplots(1, 1)
-axs3.semilogx(Hs / Rs, plotdata_single[0,:], 'k-')
+for k, phi2 in enumerate(phi2s):
+    axs3.semilogx(
+        Hs / Rs, plotdata_single[k,:],
+        'C{}-'.format(k+1), label=r"\( \phi^2 = {} \)".format(phi2)
+    )
 axs3.set_xlabel(r"\( H / R \)")
+axs3.legend()
 axs3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 axs3.grid()
 axs3.set_ylabel("Effectiveness Factor")
@@ -117,17 +124,21 @@ for i, ax in enumerate(axs2):
     ax.set_ylabel("Effectiveness Factor")
     ax.grid()
 
-maxterms = 20
+maxterms = 32
 gammas = [0.05, 1.0, 20.0]
 Rs = [2.0, 40.0]
-phi = 5.0
+phi = 20.0
 plotdata_numterms = np.empty((len(Rs),maxterms,len(gammas)))
+plotdata_numtermsexact = np.empty((len(gammas),))
 for i, gamma in enumerate(gammas):
     for j in range(maxterms):
         for k, R in enumerate(Rs):
             plotdata_numterms[k,j,i] = s(
                 phi / R, R, 2.0 * R * gamma, j+1, j+1, zero_cache=zc
             )
+    plotdata_numtermsexact[i] = s(
+        phi, 1.0, 2.0 * gamma, nexact, kexact, zero_cache=zc
+    )
 fig4, axs4 = plt.subplots(len(Rs), len(gammas))
 for k, R in enumerate(Rs):
     for i, gamma in enumerate(gammas):
@@ -138,9 +149,20 @@ for k, R in enumerate(Rs):
         axs4[k,i].set_xlabel(r"Number of Terms")
         axs4[k,i].set_ylabel(r"Effectiveness Factor")
         axs4[k,i].set_ylim((0.1, 1.0))
+fig5idx = 1
+fig5, ax5 = plt.subplots(1, 1)
+ax5.plot(np.arange(maxterms) + 1, plotdata_numterms[0,:,fig5idx], 'k.')
+ax5.plot(
+    [1, maxterms], plotdata_numtermsexact[fig5idx] * np.ones((2,)), 'r:'
+)
+ax5.set_title(r"\( \gamma = {} \)".format(gammas[fig5idx]))
+ax5.set_xlabel(r"Number of Terms")
+ax5.set_ylabel(r"Effectiveness Factor")
+#ax5.set_ylim((0.1, 1.0))
+ax5.grid()
 
 
-if False:
+if True:
     for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:

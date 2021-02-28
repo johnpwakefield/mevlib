@@ -10,7 +10,9 @@ from scipy.special import i0, i1
 from nrel_cylinders import s1, s2
 
 
-# TODO compare to exact computation by quadrature
+#plt.rc('font', size=16)
+#plt.rc('text', usetex=True)
+#plt.rc('axes', labelsize=20)
 
 
 plt.rc('text', usetex=True)
@@ -59,7 +61,7 @@ ax2.set_ylabel(r"\( \frac{I_1(z)}{I_0(z)} \)")
 ax2.grid()
 
 
-if True:
+if False:
     for i, fig in enumerate([fig1, fig2]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
