@@ -35,6 +35,7 @@ epspore = 0.319             # nondim
 tau = 7.0                   # nondim
 
 
+# the units in this formula do work out correctly
 Dis = @. 48.5 * Dpore * sqrt(T / Ms) * epspore / tau
 
 function kij(k0, Ea, R, T, T0)
@@ -53,6 +54,8 @@ bdry = [1.0, 0.8, 0.6, 0.4, 0.2, 0.0]
 equilibrium = R * Diagonal([Lam[i] == 0.0 ? 1.0 : 0.0 for i in 1:6]) * (R \ bdry)
 
 
+println("\nDis")
+display(Dis)
 println("\nkijs")
 display(kijs)
 println("\nnB")
