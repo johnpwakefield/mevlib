@@ -6,7 +6,7 @@ from random import random
 import numpy as np
 from matplotlib import pyplot as plt
 
-from nrel_cylinders import u, uresidual
+from nrel_cylinders import u, uresidual, u1residual, u2residual
 
 
 plt.rc('text', usetex=True)
@@ -59,7 +59,7 @@ sc = ax6.scatter(chkrs, chkzs, c=vals, s=3.6)
 fig6.colorbar(sc, ax=ax6)
 
 
-truncs = [6, 12, 24, 48, 96]
+truncs = [6, 12, 24, 48]
 
 rs, zs = np.linspace(0.0, 1.05 * R, 120), np.linspace(-0.05 * H, 1.05 * H, 320)
 rmesh, zmesh = np.meshgrid(rs, zs)
@@ -67,7 +67,7 @@ fig1, axs1 = plt.subplots(len(truncs), len(truncs))
 fig2, axs2 = plt.subplots(len(truncs), len(truncs))
 for fig, axs, xlims, ylims, zlim, in [
     (fig1, axs1, None, None, None),
-    (fig2, axs2, (0.0, 0.95 * R), (0.05 * H, 0.95 * H), None)
+    (fig2, axs2, (0.0, R), (0.0, H), None)
      ]:
     for i, trunc1 in enumerate(truncs):
         for j, trunc2 in enumerate(truncs):
@@ -88,12 +88,36 @@ for fig, axs, xlims, ylims, zlim, in [
             axs[i, j].set_ylim(ylims)
             fig.colorbar(cf, ax=axs[i, j])
             axs[i, j].set_title("{}, {}".format(trunc1, trunc2))
-            axs[i, j].set_xlabel("r")
-            axs[i, j].set_ylabel("z")
+            axs[i, j].set_xticklabels([])
+            axs[i, j].set_yticklabels([])
+#           axs[i, j].set_xlabel("r")
+#           axs[i, j].set_ylabel("z")
 
 
-if True:
-    for i, fig in enumerate([fig1, fig2, fig6]):
+maxterms, meshsize = 128, 400
+rs, zs = np.linspace(0.0, R, meshsize+1), np.linspace(0.0, H, meshsize+1)
+rs = 0.5 * (rs[1:] + rs[:-1])
+zs = 0.5 * (zs[1:] + zs[:-1])
+rmesh, zmesh = np.meshgrid(rs, zs)
+fig3, axs3 = plt.subplots(1, 2)
+for i, f in enumerate([u1residual, u2residual]):
+    resids = np.array([
+        np.sum(np.abs(f(a, R, H, n+1, rmesh, zmesh)))
+        for n in range(maxterms)
+    ]) / meshsize**2
+    axs3[i].plot(np.arange(maxterms) + 1, resids, 'k.')
+    axs3[i].set_xlabel(
+        r"Number of Terms (\( {} \))".format("N" if i == 0 else "K")
+    )
+    axs3[i].set_ylabel("Mean Residual")
+    axs3[i].grid()
+    axs3[i].set_title(
+        "Integrated Error in {} Sum".format("First" if i == 0 else "Second")
+    )
+
+
+if False:
+    for i, fig in enumerate([fig1, fig2, fig3, fig6]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
             fig.savefig("img/ptcheck-fig{}.{}".format(i+1,ext))
