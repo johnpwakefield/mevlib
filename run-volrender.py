@@ -18,6 +18,7 @@ rmesh, zmesh = np.meshgrid(rs, zs)
 slicetrunc = 80
 N = 40
 
+
 X, Y, Z = map(lambda l: l.flatten(), np.mgrid[-R:R:N*1j,-R:0:N*1j,0:H:N*1j])
 vals = np.array([
     abs(u(a, R, H, slicetrunc, slicetrunc, np.sqrt(x**2 + y**2), z))
@@ -33,6 +34,7 @@ fig7 = go.Figure(data=go.Volume(
     opacity=0.2,        # needs to be small to see through all surfaces
     surface_count=21,   # needs to be a large number for good volume rendering
 ))
+
 
 yc = R / 8
 thetac, zc = np.mgrid[0:2*np.pi:N*1j,0:H:N*1j]

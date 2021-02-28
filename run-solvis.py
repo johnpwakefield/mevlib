@@ -27,8 +27,8 @@ fig1, axs1 = plt.subplots(len(truncs), len(truncs))
 fig2, axs2 = plt.subplots(len(truncs), len(truncs))
 
 for fig, axs, xlims, ylims, zlim, in [
-    (fig1, axs1, None, None, 1.0),
-    (fig2, axs2, (0.0, 0.95 * R), (0.05 * H, 0.95 * H), 1.0)
+    (fig1, axs1, None, None, 2.0),
+    (fig2, axs2, (0.0, R), (0.0 * H, 1.0 * H), None)
      ]:
     for i, trunc1 in enumerate(truncs):
         for j, trunc2 in enumerate(truncs):
@@ -37,14 +37,25 @@ for fig, axs, xlims, ylims, zlim, in [
                 u2(a, R, H, trunc2, rmesh, zmesh)
             )
             if zlim is not None:
-                vals = np.minimum(np.maximum(vals, 0.5 - zlim), 0.5 + zlim)
+                minv, maxv = 0.5 - zlim, 0.5 + zlim
+            elif xlims is not None and ylims is not None:
+                idxs = np.logical_and(
+                    np.logical_and(xlims[0] < rmesh, rmesh < xlims[1]),
+                    np.logical_and(ylims[0] < zmesh, zmesh < ylims[1])
+                )
+                minv, maxv = np.min(vals[idxs]), np.max(vals[idxs])
+            else:
+                minv, maxv = -np.inf, np.inf
+            vals = np.minimum(np.maximum(vals, minv), maxv)
             cf = axs[i, j].contourf(rmesh, zmesh, vals)
             axs[i, j].set_xlim(xlims)
             axs[i, j].set_ylim(ylims)
             fig.colorbar(cf, ax=axs[i, j])
             axs[i, j].set_title("{}, {}".format(trunc1, trunc2))
-            axs[i, j].set_xlabel("r")
-            axs[i, j].set_ylabel("z")
+            axs[i, j].set_xticklabels([])
+            axs[i, j].set_yticklabels([])
+#           axs[i, j].set_xlabel("r")
+#           axs[i, j].set_ylabel("z")
 
 
 fig3, axs3 = plt.subplots(2, len(truncs))
@@ -75,10 +86,11 @@ for i, f in enumerate([u1, u2]):
 
 
 fig5, ax5 = plt.subplots(1, 1, figsize=(3.0,3.0))
-vals = np.maximum(np.minimum(
+vals = (
     u1(a, R, H, slicetrunc, rmesh, zmesh) +
-    u2(a, R, H, slicetrunc, rmesh, zmesh),
-    1.5), -0.5)
+    u2(a, R, H, slicetrunc, rmesh, zmesh)
+)
+vals = np.maximum(np.minimum(vals, 1.5), -0.5)
 cf = ax5.contourf(rmesh, zmesh, vals)
 ax5.set_xlim(xlims)
 ax5.set_ylim(ylims)
@@ -87,7 +99,7 @@ ax5.set_xlabel(r"\( r \)")
 ax5.set_ylabel(r"\( z \)")
 
 
-if True:
+if False:
     for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
