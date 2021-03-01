@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import matplotlib.ticker as mtick
 
 import numpy as np
-from scipy.special import i0, i1
+from scipy.special import i0, i1, i0e, i1e
 
 from nrel_cylinders import s1, s2
 
@@ -55,13 +55,31 @@ for i in range(2):
 
 zs = np.linspace(10.0, 800.0, 201)
 fig2, ax2 = plt.subplots(1, 1)
-ax2.plot(zs, i1(zs) / i0(zs))
+ct, cc = 300.0, 500.0
+y0 = i1e(cc) / i0e(cc)
+# tangent
+m = 1.0 - y0 * (y0 + cc**(-1))
+q = 2 * y0 / cc**2 - 2 * y0 - cc**(-1) + 2 * y0**3 + 3 * y0**2 / cc
+# TODO secant
+ax2.plot(
+    zs, i1e(zs) / i0e(zs), 'k-', label=r"\( \frac{I_1(z)}{I_0(z)} \)"
+)
+ax2.plot(
+    zs, np.where(zs < ct, i1e(zs) / i0e(zs), y0 + m * (zs - cc)), 'r--',
+    label=r"Linear Approximation"
+)
+ax2.plot(
+    zs, np.where(
+        zs < ct, i1e(zs) / i0e(zs), y0 + m * (zs - cc) + q / 2 * (zs - cc)**2
+    ),
+    'g--', label=r"Quadratic Approximation"
+)
+ax2.legend()
 ax2.set_xlabel(r"\( z \)")
-ax2.set_ylabel(r"\( \frac{I_1(z)}{I_0(z)} \)")
 ax2.grid()
 
 
-if False:
+if True:
     for i, fig in enumerate([fig1, fig2]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
