@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from scipy.special import j0, j1, i0, i0e, i1, jn_zeros
+from scipy.special import j0, j1, i0, i0e, i1, i1e, jn_zeros
 
 
 # solution pointwise
@@ -89,12 +89,14 @@ def gn(a, H, n):
 def ln(a, R, alphak):
     return np.sqrt(a**2 + (alphak / R)**2)
 
-def s1(a, R, H, trunc, bratcutoff=400.0):
+def s1(a, R, H, trunc, bratcutoff=None):
     ns = np.array([n for n in range(trunc-1, -1, -1)])
     gns = gn(a, H, ns)
     # the ratio I1/I0 tends to 1 (inf/inf) very quickly
-    #TODO should these be swapped out for the exponentially scaled versions?
-    brat = np.where(gns * R < bratcutoff, i1(gns * R) / i0(gns * R), 1.0)
+    #TODO instead of computing then checking, just compute what is needed
+    brat = i1e(gns * R) / i0e(gns * R)
+    if bratcutoff is not None:
+        brat = np.where(gns * R < bratcutoff, brat, 1.0)
     return sum(16.0 / (np.pi**2 * R * gns * (2 * ns + 1)**2) * brat)
 
 def s2(a, R, H, trunc, zero_cache=None):
