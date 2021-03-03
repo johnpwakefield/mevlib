@@ -46,10 +46,10 @@ def s2og_cost(K):
     return K * term
 
 def s1ak_cost(N):
-    return s1og_cost(N + 1) + (2 * N - 1) * (mult_cost + divi_cost)
+    return s1og_cost(N + 2) + (2 * N - 1) * (mult_cost + divi_cost)
 
 def s2ak_cost(K):
-    return s2og_cost(K + 1) + (2 * K - 1) * (mult_cost + divi_cost)
+    return s2og_cost(K + 2) + (2 * K - 1) * (mult_cost + divi_cost)
 
 def s1ct_cost(N, c):
     Ncrit = int(0.5 * (H / (np.pi * R) * np.sqrt(c**2 - a**2 * R**2) - 1.0))
@@ -92,12 +92,12 @@ def aitkenBK(a, R, H, trunc):
 
 
 fig1, axs1 = plt.subplots(2, 2)
-axs1[0,0].plot(
+axs1[0,0].semilogy(
     ntruncs,
     [abs((s1(a, R, H, trunc) - s1exact) / s1exact) for trunc in ntruncs],
     'k.', label="Standard"
 )
-axs1[0,0].plot(
+axs1[0,0].semilogy(
     ntruncs,
     [
         abs((aitkenAN(a, R, H, trunc) - s1exact) / s1exact)
@@ -105,12 +105,12 @@ axs1[0,0].plot(
     ],
     'gx', label=r"Aitken \( \delta^2 \)"
 )
-axs1[0,1].plot(
+axs1[0,1].semilogy(
     ktruncs,
     [abs((s2(a, R, H, trunc) - s2exact) / s2exact) for trunc in ktruncs],
     'k.'
 )
-axs1[0,1].plot(
+axs1[0,1].semilogy(
     ktruncs,
     [abs((aitkenBK(a, R, H, trunc) - s2exact) / s2exact) for trunc in ktruncs],
     'gx'
@@ -126,12 +126,17 @@ for i in range(2):
     axs1[0,i].grid()
 
 
-axs1[1,0].plot(
+axs1[1,0].semilogy(
     [s1og_cost(trunc) for trunc in ntruncs],
     [abs((s1(a, R, H, trunc) - s1exact) / s1exact) for trunc in ntruncs],
     'k.', label="Standard"
 )
-axs1[1,0].plot(
+axs1[1,0].semilogy(
+    [s1og_cost(trunc) for trunc in ntruncs],
+    [abs((s1(1.0, a * R, a * H, trunc) - s1exact) / s1exact) for trunc in ntruncs],
+    'k.', label="Change of Variables"
+)
+axs1[1,0].semilogy(
     [s1ak_cost(trunc) for trunc in ntruncs],
     [
         abs((aitkenAN(a, R, H, trunc) - s1exact) / s1exact)
@@ -139,12 +144,12 @@ axs1[1,0].plot(
     ],
     'gx', label=r"Aitken \( \delta^2 \)"
 )
-axs1[1,1].plot(
+axs1[1,1].semilogy(
     [s2og_cost(trunc) for trunc in ktruncs],
     [abs((s2(a, R, H, trunc) - s2exact) / s2exact) for trunc in ktruncs],
     'k.'
 )
-axs1[1,1].plot(
+axs1[1,1].semilogy(
     [s2ak_cost(trunc) for trunc in ktruncs],
     [abs((aitkenBK(a, R, H, trunc) - s2exact) / s2exact) for trunc in ktruncs],
     'gx'
