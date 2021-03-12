@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from scipy.special import j0, j1, i0, i0e, i1, i1e, jn_zeros
+from scipy.special import j0, j1, i0e, i1e, jn_zeros
 
 
 # solution pointwise
@@ -26,8 +26,8 @@ def u2(a, R, H, trunc, r, z, zero_cache=None):
     for k in range(trunc, 0, -1):
         lk = np.sqrt(a**2 + (alpha[k-1] / R)**2)
         cum += (
-            np.cosh(lk * (z - H / 2)) / np.cosh(lk * H / 2) / alpha[k-1]
-            * j0(alpha[k-1] / R * r) / j1(alpha[k-1])
+            np.cosh(lk * (z - H / 2)) / np.cosh(lk * H / 2)
+            * j0(alpha[k-1] / R * r) / (j1(alpha[k-1]) * alpha[k-1])
         )
     return 2.0 * cum
 
@@ -104,8 +104,8 @@ def s2(a, R, H, trunc, zero_cache=None):
         alpha = zero_cache
     else:
         alpha = jn_zeros(0, trunc)
-    lnks = ln(a, R, alpha)
-    return 8.0 * sum(np.tanh(lnks * H / 2) / (H * lnks * alpha**2))
+    lnks = ln(a, R, alpha[::-1])
+    return 8.0 * sum(np.tanh(lnks * H / 2) / (H * lnks * alpha[::-1]**2))
 
 def s(a, R, H, ntrunc, ktrunc, zero_cache=None):
     s1val = s1(a, R, H, ntrunc)
