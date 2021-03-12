@@ -54,6 +54,10 @@ bdry = [1.0, 0.8, 0.6, 0.4, 0.2, 0.0]
 equilibrium = R * Diagonal([Lam[i] == 0.0 ? 1.0 : 0.0 for i in 1:6]) * (R \ bdry)
 
 
+println("\nk0s")
+display(transpose(k0s))
+println("\nEas")
+display(transpose(Eas))
 println("\nDis")
 display(Dis)
 println("\nkijs")
