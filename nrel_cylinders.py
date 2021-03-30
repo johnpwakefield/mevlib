@@ -119,3 +119,71 @@ def s(a, R, H, ntrunc, ktrunc, zero_cache=None):
     return s1val + s2val
 
 
+# reaction mechanisms
+
+class Mechanism(object):
+
+    gasconst = 8.31446261815324e-3  # kJ per mol Kelvin
+
+    def Di(self, T):
+        return (
+            48.5 * self.Dpore * np.sqrt(T / self.Ms) * self.epspore / self.tau
+        )
+
+    def kij(self, T):
+        return (
+            self.k0s
+            * np.exp(-self.Eas / self.gasconst * (1 / T - 1 / self.T0))
+        )
+
+    def makematrix(self, T, L):
+        kijs, Dis = self.kij(T), self.Di(T)
+        phiij2s = kijs * L**2 / (np.tile(Dis.reshape((-1,1)),6))
+        B = np.diag(np.sum(phiij2s, axis=0)) - phiij2s
+        return B
+
+
+class CEJMechanism(Mechanism):
+
+    k0s = np.array([            # 1 / s
+        [0.000, 0.000, 0.000, 0.000, 0.000, 0.000],
+        [1.413, 0.000, 0.000, 0.000, 0.000, 0.000],
+        [4.337, 0.229, 0.000, 0.000, 0.000, 0.000],
+        [1.163, 0.161, 0.128, 0.000, 0.000, 0.000],
+        [0.114, 0.041, 0.030, 0.000, 0.000, 0.000],
+        [0.386, 0.137, 0.103, 0.000, 0.000, 0.000]
+    ])
+
+    Eas = np.array([            # kJ / mol
+        [ 0.0,  0.0,  0.0, 0.0, 0.0, 0.0],      # noqa E201
+        [47.6,  0.0,  0.0, 0.0, 0.0, 0.0],
+        [43.4, 54.1,  0.0, 0.0, 0.0, 0.0],
+        [38.5, 62.9, 80.5, 0.0, 0.0, 0.0],
+        [30.2, 66.7, 85.2, 0.0, 0.0, 0.0],
+        [30.0, 65.0, 77.3, 0.0, 0.0, 0.0]
+    ])
+
+    Ms = np.array([             # g / mol
+                444.0, 230.0, 115.0, 52.0, 16.0, 400.0
+                ])
+
+    T0 = 773                        # Kelvin
+    Dpore = 2.0                     # nm
+    epspore = 0.319                 # nondim
+    tau = 7.0                       # nondim
+
+
+class FakeReversibleMechanism(Mechanism):
+
+    Ms = CEJMechanism.Ms
+    T0 = CEJMechanism.T0
+    Dpore = CEJMechanism.Dpore
+    epspore = CEJMechanism.epspore
+    tau = CEJMechanism.tau
+
+    def __init__(self):
+        self.rand = np.random.rand(*CEJMechanism.k0s.shape)
+        self.k0s = CEJMechanism.k0s + 0.5 * self.rand * CEJMechanism.k0s.T
+        self.Eas = CEJMechanism.Eas + 2.0 * self.rand * CEJMechanism.Eas.T
+
+
