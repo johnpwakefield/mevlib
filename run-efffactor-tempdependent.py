@@ -27,7 +27,7 @@ k0s = np.array([            # 1 / s
 ])
 
 Eas = np.array([            # kJ / mol
-    [ 0.0,  0.0,  0.0, 0.0, 0.0, 0.0],
+    [ 0.0,  0.0,  0.0, 0.0, 0.0, 0.0],      # noqa E201
     [47.6,  0.0,  0.0, 0.0, 0.0, 0.0],
     [43.4, 54.1,  0.0, 0.0, 0.0, 0.0],
     [38.5, 62.9, 80.5, 0.0, 0.0, 0.0],
@@ -61,12 +61,11 @@ zc = jn_zeros(0, kexact)
 
 # functions
 
-def Di_scalar(T):
+def Di(T):
     return 48.5 * Dpore * np.sqrt(T / Ms) * epspore / tau
 
-def kij_scalar(k0, Ea, T):
+def kij(k0, Ea, T):
     return k0 * np.exp(-Ea / gasconst * (1 / T - 1 / T0))
-Di, kij = np.vectorize(Di_scalar), np.vectorize(kij_scalar)
 
 def makematrix(T):
     kijs, Dis = kij(k0s, Eas, T), Di(T)
@@ -140,7 +139,10 @@ for efactor, name in [
     for R, H, T, C in cases:
         print(
             " & ".join(list(map(str,
-                                [R, H, T, *C, *stringifyetas(efactor(R, H, T, C))]
+                                [
+                                    R, H, T, *C,
+                                    *stringifyetas(efactor(R, H, T, C))
+                                ]
                                 )))
             + r" \\\hline"
         )

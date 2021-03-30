@@ -162,7 +162,7 @@ ax5.set_ylabel(r"Effectiveness Factor")
 ax5.grid()
 
 
-if True:
+if False:
     for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
