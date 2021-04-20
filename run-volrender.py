@@ -16,57 +16,77 @@ rmesh, zmesh = np.meshgrid(rs, zs)
 
 
 slicetrunc = 80
-N = 40
-
-
-X, Y, Z = map(lambda l: l.flatten(), np.mgrid[-R:R:N*1j,-R:0:N*1j,0:H:N*1j])
-vals = np.array([
-    abs(u(a, R, H, slicetrunc, slicetrunc, np.sqrt(x**2 + y**2), z))
-    for (x, y, z) in zip(X, Y, Z)
-])
-fig7 = go.Figure(data=go.Volume(
-    x=X.flatten(),
-    y=Y.flatten(),
-    z=Z.flatten(),
-    value=vals.flatten(),
-    isomin=-0.1,
-    isomax=1.0,
-    opacity=0.2,        # needs to be small to see through all surfaces
-    surface_count=21,   # needs to be a large number for good volume rendering
-))
-
-
+N = 240
 yc = R / 8
-thetac, zc = np.mgrid[0:2*np.pi:N*1j,0:H:N*1j]
-xc = R * np.cos(thetac)
-yc = np.minimum(R * np.sin(thetac), yc)
-cc = np.empty_like(thetac)
-thetatb, rtb = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
-xt, yt = rtb * np.cos(thetatb), np.minimum(rtb * np.sin(thetatb), yc)
-zt, zb = np.zeros_like(thetatb), H * np.ones_like(thetatb)
-ct, cb = np.empty_like(thetatb), np.empty_like(thetatb)
-for i in range(N):
-    for j in range(N):
-        cc[i,j] = u(
-            a, R, H, slicetrunc, slicetrunc,
-            np.sqrt(xc[i,j]**2 + yc[i,j]**2), zc[i,j]
-        )
-        ct[i,j] = u(
-            a, R, H, slicetrunc, slicetrunc,
-            np.sqrt(xt[i,j]**2 + yt[i,j]**2), zt[i,j]
-        )
+zc = 0.4*H
+
+
+fullscale = [
+    [0.000, "green"],
+    [0.001, "green"],
+    [0.002, "blue"],
+    [1.000, "orange"]
+]
+green = [
+    [0.0, "green"],
+    [1.0, "green"]
+]
+
+cyl1theta, cyl1z = np.mgrid[0:2*np.pi:N*1j,0:zc:N*1j]
+cyl1u = np.zeros_like(cyl1theta)
+
+flat1theta, flat1r = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
+flat1z = zc * np.ones_like(flat1theta)
+flat1u = u(a, R, H, slicetrunc, slicetrunc, flat1r, zc)
+flat1u[flat1r*np.sin(flat1theta) < -yc] = 0.0
+
+cyl2theta, cyl2z = np.mgrid[0:2*np.pi:N*1j,zc:H:N*1j]
+cyl2x = R * np.cos(cyl2theta)
+cyl2y = np.minimum(R * np.sin(cyl2theta), yc)
+cyl2u = u(a, R, H, slicetrunc, slicetrunc, np.sqrt(cyl2x**2 + cyl2y**2), cyl2z)
+cyl2u[cyl2y != yc] = 1e-7
+print(np.max(cyl2u), np.min(cyl2u))
+
+flat2theta, flat2r = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
+flat2x = R * np.cos(flat2theta)
+flat2y = np.minimum(R * np.sin(flat2theta), yc)
+flat2z = H * np.ones_like(flat2theta)
+flat2u = np.zeros_like(flat2theta)
+flat2u[flat2r * np.sin(flat2theta) > yc] = np.nan
+
+
 fig8 = go.Figure(data=[
-    go.Surface(x=xc, y=yc, z=zc, surfacecolor=cc),
-    go.Surface(x=xt, y=yt, z=zt, surfacecolor=ct),
-    go.Surface(x=xt, y=yt, z=zb, surfacecolor=ct)
+    go.Surface(
+        x=R*np.cos(cyl1theta), y=R*np.sin(cyl1theta), z=cyl1z,
+        surfacecolor=cyl1u, colorscale=green
+    ),
+    go.Surface(
+        x=cyl2x, y=cyl2y, z=cyl2z,
+        surfacecolor=cyl2u, colorscale=fullscale
+    ),
+    go.Surface(
+        x=flat1r*np.cos(flat1theta), y=flat1r*np.sin(flat1theta), z=flat1z,
+        surfacecolor=flat1u, colorscale=fullscale
+    ),
+    go.Surface(
+        x=flat2x, y=flat2y, z=flat2z,
+        surfacecolor=flat2u, colorscale=green
+    )
 ])
+fig8.update_layout(
+    scene={
+        'xaxis': {'showticklabels': False, 'showgrid': False, 'title': ''},
+        'yaxis': {'showticklabels': False, 'showgrid': False, 'title': ''},
+        'zaxis': {'showticklabels': False, 'showgrid': False, 'title': ''}
+    }
+)
 
 
 if True:
-    for i, fig in enumerate([fig7, fig8]):
-        fig.write_html("img/volrender-fig{}.html".format(7+i))
+    for i, fig in enumerate([fig8]):
+        fig.write_html("img/volrender-fig{}.html".format(8+i))
 else:
-    for fig in [fig7, fig8]:
+    for fig in [fig8]:
         fig.show()
 
 
