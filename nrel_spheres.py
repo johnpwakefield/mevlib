@@ -6,15 +6,12 @@ import numpy as np
 # solution pointwise
 
 def u(a, R, r):
-    return np.cosh(a * r) / np.cosh(a * R)
+    return (R / r) * np.sinh(a * r) / np.sinh(a * R)
 
 
 # solution integrated over domain
 
 def s(a, R):
-    return (
-        (3.0 / a + 18.0 / a**3 / R**2) * np.tanh(a * R)
-        - (9.0 / R / a**2 + 18.0 / R**3 / a**4)
-    )
+    return 3.0 / (R * a) * (np.coth(R * a) - (R * a)**(-1))
 
 
