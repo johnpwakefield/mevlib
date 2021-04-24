@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 
+import pkgutil
 import pickle
 
 import numpy as np
@@ -8,6 +9,7 @@ from matplotlib import pyplot as plt
 from matplotlib import colors
 
 from mevlib.scalar import cyl_ptwise
+from mevlib.scripts import imgpath, showfigs
 
 
 plt.rc('font', size=12)
@@ -28,7 +30,7 @@ cases = [
 ]
 fns = [
     (
-        "./dat/cyl_case{}.pickle"
+        "/data/cyl_case{}.pickle"
     ).format(i+1)
     for i in range(5)
 ]
@@ -46,8 +48,8 @@ for i, ((R, H, L, phi2, cphi2), fn) in enumerate(zip(cases, fns)):
         return np.vectorize(cyl_ptwise)(
             phi2, R / L, H / L, n, k, r / L, z / L
         )
-    with open(fn, 'rb') as fh:
-        refsoln = pickle.load(fh)
+    pkl = pkgutil.get_data('mevlib', fn)
+    refsoln = pickle.loads(pkl)
     oursoln = solfunc(refsoln['rmesh'], refsoln['zmesh'])
     versoln = refsoln['umesh']
     hi1, hi2 = np.array(refsoln['rmesh'].shape) - 1
@@ -95,7 +97,12 @@ ax.grid()
 ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
 ax.set_ylabel(r"\( L^2 \) error")
 ax.legend()
-for ext in ['svg', 'pdf']:
-    fig.savefig("img/comparison_l2errs." + ext)
+
+
+if showfigs():
+    plt.show()
+else:
+    for ext in ['svg', 'pdf']:
+        fig.savefig(imgpath("comparison_l2errs." + ext))
 
 

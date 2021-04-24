@@ -6,11 +6,13 @@ import numpy as np
 import plotly.graph_objects as go
 
 from mevlib.scalar import cyl_ptwise
+from mevlib.scripts import imgpath, showfigs
 
 
 a2 = 0.8**2
 R, H = 04.0, 15.0
-rs, zs = np.linspace(0.0, 1.05 * R, 120), np.linspace(-0.05 * H, 1.05 * H, 320)
+Nr, Nz = 50, 70
+rs, zs = np.linspace(0.0, 1.05 * R, Nr), np.linspace(-0.05 * H, 1.05 * H, Nz)
 rmesh, zmesh = np.meshgrid(rs, zs)
 
 
@@ -83,11 +85,10 @@ fig8.update_layout(
 )
 
 
-if True:
+if not showfigs():
     for i, fig in enumerate([fig8]):
-        fig.write_html("img/volrender-fig{}.html".format(8+i))
+        fig.write_html(imgpath("volrender-fig{}.html".format(8+i)))
 else:
-    for fig in [fig8]:
-        fig.show()
+    plt.show()
 
 

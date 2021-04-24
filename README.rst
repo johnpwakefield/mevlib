@@ -84,6 +84,11 @@ TODO
   - implement full test
         series -> fortran lookup tables -> fortran compiled
         -> call from python -> compare to other method
+  - it is possible several of the files in this directory should be in the
+    package directory; determine if this is the case and fix accordingly
+  - several of the scripts in "scripts" are actually tests, make these into
+    tests and move them into the tests directory
+  - scripts should have a function as an entry point
 
 
 

@@ -1,7 +1,7 @@
 
 
 # images directory
-img/*
+img*
 
 # python caches
 __pycache__

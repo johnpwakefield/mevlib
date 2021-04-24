@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
 
+from scipy.special import jn_zeros
 from matplotlib import pyplot as plt
 
 from mevlib.scalar import cyl_intgtd
-from scipy.special import jn_zeros
-
-
-plt.rc('font', size=16)
-plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=20)
 
 
 nexact, kexact = 128, 128

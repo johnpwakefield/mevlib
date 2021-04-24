@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from mevlib.scalar import psm_ptwise, psm_ptwise_xdir
+from mevlib.scripts import imgpath, showfigs
 
 
 plt.rc('text', usetex=True)
@@ -40,6 +41,11 @@ ax5.set_xlabel(r"\( x \)")
 ax5.set_ylabel(r"\( y \)")
 
 
-plt.show()
+if showfigs():
+    plt.show()
+else:
+    for i, fig in enumerate([fig4, fig5]):
+        for ext in ['pdf', 'svg']:
+            fig.savefig(imgpath("psm_solvis-{}.{}".format(i+1, ext)))
 
 

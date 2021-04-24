@@ -10,6 +10,7 @@ import numpy as np
 from mevlib.scalar import sum_standard, sum_aitken
 from mevlib.scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
 from mevlib.scalar import psm_intgtd_xdir
+from mevlib.scripts import imgpath, showfigs
 
 
 plt.rc('text', usetex=True)
@@ -121,11 +122,11 @@ ax2.legend()
 ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 4))
 
 
-if False:
+if not showfigs():
     for n, fig in [('nterms', fig1), ('cost', fig2)]:
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
-            fig.savefig("img/sumconv-{}.{}", n, ext)
+            fig.savefig(imgpath("sumconv-{}.{}".format(n, ext)))
 else:
     plt.show()
 

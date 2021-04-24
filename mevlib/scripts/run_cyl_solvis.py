@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from mevlib.scalar import cyl_ptwise_radial_vect, cyl_ptwise_axial_vect
+from mevlib.scripts import imgpath, showfigs
 
 
 plt.rc('text', usetex=True)
@@ -99,11 +100,13 @@ ax5.set_xlabel(r"\( r \)")
 ax5.set_ylabel(r"\( z \)")
 
 
-if False:
+if not showfigs():
     for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
-            fig.savefig("img/graphic-{}.{}".format("fig{}".format(i+1), ext))
+            fig.savefig(imgpath(
+                "graphic-{}.{}".format("fig{}".format(i+1), ext)
+            ))
 else:
     plt.show()
 

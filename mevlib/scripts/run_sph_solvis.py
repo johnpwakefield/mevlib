@@ -5,8 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mevlib.scalar import sph_ptwise
 
-
-
+from mevlib.scripts import imgpath, showfigs
 
 
 R = 120.0
@@ -32,9 +31,11 @@ ax2.set_ylabel(r'\( y \)')
 fig2.colorbar(clp)
 
 
-
-plt.show()
-
-
+if showfigs():
+    plt.show()
+else:
+    for i, fig in enumerate([fig1, fig2]):
+        for ext in ['pdf', 'svg']:
+            fig.savefig(imgpath("sph_solvis-{}.{}".format(i+1, ext)))
 
 
