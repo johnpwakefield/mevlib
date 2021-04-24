@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import colors
 
-from lib_scalar import cyl_ptwise
+from mevlib.scalar import cyl_ptwise
 
 
 plt.rc('font', size=12)

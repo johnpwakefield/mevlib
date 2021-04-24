@@ -5,7 +5,7 @@ import numpy as np
 
 import plotly.graph_objects as go
 
-from lib_scalar import cyl_ptwise
+from mevlib.scalar import cyl_ptwise
 
 
 a2 = 0.8**2

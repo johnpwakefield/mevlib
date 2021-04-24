@@ -7,9 +7,9 @@ import matplotlib.ticker as mtick
 
 import numpy as np
 
-from lib_scalar import sum_standard, sum_aitken
-from lib_scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
-from lib_scalar import psm_intgtd_xdir
+from mevlib.scalar import sum_standard, sum_aitken
+from mevlib.scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
+from mevlib.scalar import psm_intgtd_xdir
 
 
 plt.rc('text', usetex=True)

@@ -3,7 +3,7 @@
 
 from matplotlib import pyplot as plt
 
-from lib_scalar import cyl_intgtd
+from mevlib.scalar import cyl_intgtd
 from scipy.special import jn_zeros
 
 

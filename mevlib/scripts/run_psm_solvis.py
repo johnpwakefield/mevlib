@@ -5,7 +5,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from lib_scalar import psm_ptwise, psm_ptwise_xdir
+from mevlib.scalar import psm_ptwise, psm_ptwise_xdir
 
 
 plt.rc('text', usetex=True)

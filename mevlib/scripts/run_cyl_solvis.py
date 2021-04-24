@@ -5,7 +5,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from lib_scalar import cyl_ptwise_radial_vect, cyl_ptwise_axial_vect
+from mevlib.scalar import cyl_ptwise_radial_vect, cyl_ptwise_axial_vect
 
 
 plt.rc('text', usetex=True)
