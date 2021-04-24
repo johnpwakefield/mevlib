@@ -77,11 +77,10 @@ TODO
 ------------------------------------------
 
   - migrate verification cases to new format
-  - merge this with new library
   - add other shapes to volrenders
-  - repackage as python package
   - write better documentation / tutorial
-  - add license
+  - verify license decision with collaborators
+  - add authorship page
   - implement full test
         series -> fortran lookup tables -> fortran compiled
         -> call from python -> compare to other method
