@@ -6,4 +6,10 @@ img/*
 # python caches
 __pycache__
 
+# old files (this is temporary during the transition period)
+old*
+
+# mevlookup files are generated outputs
+mevlookup.f03
+
 

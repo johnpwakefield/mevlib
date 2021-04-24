@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 
-from math import sqrt
-
 from matplotlib import pyplot as plt
 
-from nrel_cylinders import s
+from lib_scalar import cyl_intgtd
 from scipy.special import jn_zeros
 
 
@@ -32,7 +30,7 @@ cases = [(*case, compphi2) for case, compphi2 in zip(cases, compphi2s)]
 
 
 etas = [
-    s(sqrt(phi2), R / L, H / L, nexact, kexact, zero_cache=zc)
+    cyl_intgtd(phi2, R / L, H / L, nexact, kexact, zero_cache=zc)
     for R, H, L, phi2, cphi2 in cases
 ]
 

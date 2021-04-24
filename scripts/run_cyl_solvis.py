@@ -5,7 +5,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 
-from nrel_cylinders import u1, u2
+from lib_scalar import cyl_ptwise_radial_vect, cyl_ptwise_axial_vect
 
 
 plt.rc('text', usetex=True)
@@ -33,8 +33,8 @@ for fig, axs, xlims, ylims, zlim, in [
     for i, trunc1 in enumerate(truncs):
         for j, trunc2 in enumerate(truncs):
             vals = (
-                u1(a, R, H, trunc1, rmesh, zmesh) +
-                u2(a, R, H, trunc2, rmesh, zmesh)
+                cyl_ptwise_radial_vect(a, R, H, trunc1, rmesh, zmesh) +
+                cyl_ptwise_axial_vect(a, R, H, trunc2, rmesh, zmesh)
             )
             if zlim is not None:
                 minv, maxv = 0.5 - zlim, 0.5 + zlim
@@ -60,7 +60,7 @@ for fig, axs, xlims, ylims, zlim, in [
 
 fig3, axs3 = plt.subplots(2, len(truncs))
 for i, trunc in enumerate(truncs):
-    for j, f in enumerate([u1, u2]):
+    for j, f in enumerate([cyl_ptwise_radial_vect, cyl_ptwise_axial_vect]):
         cf = axs3[j, i].contourf(rmesh, zmesh, f(a, R, H, trunc, rmesh, zmesh))
         axs3[j,i].set_xlim((0.0, R))
         axs3[j,i].set_ylim((0.0, H))
@@ -71,7 +71,7 @@ for i, trunc in enumerate(truncs):
 
 
 fig4, axs4 = plt.subplots(2, 2)
-for i, f in enumerate([u1, u2]):
+for i, f in enumerate([cyl_ptwise_radial_vect, cyl_ptwise_axial_vect]):
     nd = "First" if i == 0 else "Second"
     axs4[i,0].plot(rs, f(a, R, H, slicetrunc, rs, H/3))
     axs4[i,0].set_xlabel(r"\( r \)")
@@ -87,8 +87,8 @@ for i, f in enumerate([u1, u2]):
 
 fig5, ax5 = plt.subplots(1, 1, figsize=(3.0,3.0))
 vals = (
-    u1(a, R, H, slicetrunc, rmesh, zmesh) +
-    u2(a, R, H, slicetrunc, rmesh, zmesh)
+    cyl_ptwise_radial_vect(a, R, H, slicetrunc, rmesh, zmesh) +
+    cyl_ptwise_axial_vect(a, R, H, slicetrunc, rmesh, zmesh)
 )
 vals = np.maximum(np.minimum(vals, 1.5), -0.5)
 cf = ax5.contourf(rmesh, zmesh, vals)

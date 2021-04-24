@@ -5,12 +5,11 @@ import numpy as np
 
 import plotly.graph_objects as go
 
-from nrel_cylinders import u
+from lib_scalar import cyl_ptwise
 
 
-a = 00.8
-R = 04.0
-H = 15.0
+a2 = 0.8**2
+R, H = 04.0, 15.0
 rs, zs = np.linspace(0.0, 1.05 * R, 120), np.linspace(-0.05 * H, 1.05 * H, 320)
 rmesh, zmesh = np.meshgrid(rs, zs)
 
@@ -37,13 +36,15 @@ cyl1u = np.zeros_like(cyl1theta)
 
 flat1theta, flat1r = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
 flat1z = zc * np.ones_like(flat1theta)
-flat1u = u(a, R, H, slicetrunc, slicetrunc, flat1r, zc)
+flat1u = np.vectorize(cyl_ptwise)(a2, R, H, slicetrunc, slicetrunc, flat1r, zc)
 flat1u[flat1r*np.sin(flat1theta) < -yc] = 0.0
 
 cyl2theta, cyl2z = np.mgrid[0:2*np.pi:N*1j,zc:H:N*1j]
 cyl2x = R * np.cos(cyl2theta)
 cyl2y = np.minimum(R * np.sin(cyl2theta), yc)
-cyl2u = u(a, R, H, slicetrunc, slicetrunc, np.sqrt(cyl2x**2 + cyl2y**2), cyl2z)
+cyl2u = np.vectorize(cyl_ptwise)(
+    a2, R, H, slicetrunc, slicetrunc, np.sqrt(cyl2x**2 + cyl2y**2), cyl2z
+)
 cyl2u[cyl2y != yc] = 1e-7
 print(np.max(cyl2u), np.min(cyl2u))
 

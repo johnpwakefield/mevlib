@@ -1,0 +1,18 @@
+
+
+#### standard requirements; most installations should have these ####
+matplotlib ~= 3.1.1
+numpy ~= 1.19.5
+pyparsing ~= 2.4.7
+scipy ~= 1.5.4
+
+### not used yet, but should be used ####
+pytest ~= 6.2.2
+
+#### only required for the nice progress bar ####
+tqdm ~= 4.36.1
+
+#### only required for the volrender scripts ####
+plotly ~= 4.4.1
+
+

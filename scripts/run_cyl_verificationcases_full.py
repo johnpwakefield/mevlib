@@ -3,14 +3,11 @@
 
 import pickle
 
-from math import sqrt
-
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import colors
 
-from nrel_cylinders import u
-from scipy.special import jn_zeros
+from lib_scalar import cyl_ptwise
 
 
 plt.rc('font', size=12)
@@ -19,7 +16,6 @@ plt.rc('axes', labelsize=18)
 
 
 nexact, kexact = 128, 64
-zc = jn_zeros(0, kexact)
 
 
 D = 5.4423
@@ -32,7 +28,7 @@ cases = [
 ]
 fns = [
     (
-        "../43.08-External_Verification/casestudies_030321/Case{}_A.pickle"
+        "./dat/cyl_case{}.pickle"
     ).format(i+1)
     for i in range(5)
 ]
@@ -47,7 +43,9 @@ fig, axs = plt.subplots(5, 2, figsize=(8.0, 14.5))
 for i, ((R, H, L, phi2, cphi2), fn) in enumerate(zip(cases, fns)):
     cms = [None, None]
     def solfunc(r, z, n=nexact, k=kexact):
-        return u(sqrt(phi2), R / L, H / L, n, k, r / L, z / L, zero_cache=zc)
+        return np.vectorize(cyl_ptwise)(
+            phi2, R / L, H / L, n, k, r / L, z / L
+        )
     with open(fn, 'rb') as fh:
         refsoln = pickle.load(fh)
     oursoln = solfunc(refsoln['rmesh'], refsoln['zmesh'])

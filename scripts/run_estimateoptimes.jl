@@ -31,6 +31,7 @@ function timing(N::Int, print::Bool=true)::Nothing
     divitime = @elapsed divi.(data, Float64(pi))
     expntime = @elapsed exp.(data)
     roottime = @elapsed root.(data)
+    sinetime = @elapsed sin.(data)
     bes0time = @elapsed besselj0.(data)
     bes1time = @elapsed besselj1.(data)
 
@@ -41,6 +42,7 @@ function timing(N::Int, print::Bool=true)::Nothing
         println("Division time: $(divitime / N)")
         println("Exponentiation time: $(expntime / N)")
         println("Square root time: $(roottime / N)")
+        println("Sine time: $(sinetime / N)")
         println("Bessel 0 time: $(bes0time / N)")
         println("Bessel 1 time: $(bes1time / N)")
         println("-"^20)
@@ -48,6 +50,7 @@ function timing(N::Int, print::Bool=true)::Nothing
         println("Divi cost: $(divitime / multtime)")
         println("Expn cost: $(expntime / multtime)")
         println("Root cost: $(roottime / multtime)")
+        println("Sine cost: $(sinetime / multtime)")
         println("Bes0 cost: $(bes0time / multtime)")
         println("Bes1 cost: $(bes1time / multtime)")
         println("="^40)

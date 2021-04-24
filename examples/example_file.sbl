@@ -1,0 +1,97 @@
+
+
+PRECISION
+
+TYPE TRUNC
+
+NTRUNC  64
+KTRUNC  128
+
+END
+
+
+SHAPE
+
+TYPE CYLINDER
+
+RADIUS  80
+HEIGHT  550
+
+END
+
+
+TEMPERATURE
+
+TYPE UNIFORM
+
+START   500.0
+STOP    900.0
+NUM     4200
+
+END
+
+
+DIFFUSION
+
+TYPE KNUDSEN        # other types to be added; this is the default
+
+POREDIAMETER    2.0
+VOIDAGE         0.319
+TORTUOSITY      7.0
+
+END
+
+
+SPECIES
+
+LONGNAME    SPECIFIED # this means it is the second column below (ommitted by default)
+MOLWEIGHT   SPECIFIED # this means it is the last column below (default)
+
+TABLE
+#   sym name                    MW
+    S   "Feed Oil"              444.0
+    D   "Diesel"                230.0
+    G   "Gasoline"              115.0
+    LPG "Liquid Petroleum Gas"  52.0
+    DR  "Dry Gas"               16.0
+    CK  "Coke"                  400.0
+    IN  "Inert Species"         42.0
+END
+
+END
+
+
+REACTIONS
+
+TYPE ARRCOEFFS  # for A, b, Ea, T0 in A T^b e^(-Ea / R (1/T - 1/T0))
+
+# the two following lines have three options for the value:
+#   "default"   use the default; this is used if this line is ommitted
+#   "specified" this is specified in a column below
+#   a number    this one value is used for all species
+#   "ommitted"  this means the value is not provided here or in the table
+PREFACTOR SPECIFIED     # this is the default
+EXPONENT OMITTED        # this is the default, equivalent to 0
+ACTENERGY SPECIFIED     # this is the default
+REFTEMP 773             # the default is to ommit the term
+                        # the gas constant may not be specified
+
+TABLE
+#   reaction    k0      Ea
+    S -> D      1.413   47.6
+    S -> G      4.337   43.4
+    S -> LPG    1.163   38.5
+    S -> DR     0.114   30.2
+    S -> CK     0.386   30.0
+    D -> G      0.229   54.1
+    D -> LPG    0.161   62.9
+    D -> DR     0.041   66.7
+    D -> CK     0.137   65.0
+    G -> LPG    0.128   80.5
+    G -> DR     0.030   85.2
+    G -> CK     0.103   77.3
+END
+
+END
+
+
