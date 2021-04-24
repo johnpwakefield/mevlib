@@ -21,7 +21,7 @@ python3 setup.py develop
 
 
 echo "You are now ready to develop the package and/or run scripts in this    "
-echo "package without adjusting the path.  Do leave this virtual environment,"
+echo "package without adjusting the path.  To leave this virtual environment,"
 echo "use 'deactivate'."
 
 
