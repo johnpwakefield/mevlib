@@ -44,6 +44,23 @@ If you are using <list of some libs>, then all you have to do is turn it on.
 
 
 
+
+Developing with MEVLib
+------------------------------------------
+
+
+from the project directory:
+python3 -m venv virtualenv
+source ./virtualenv/bin/activate
+python3 setup.py develop
+# do stuff
+deactivate
+
+
+
+
+
+
 Detailed Implementation Instructions
 ------------------------------------------
 
