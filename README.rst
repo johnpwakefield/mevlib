@@ -82,6 +82,9 @@ TODO
   - repackage as python package
   - write better documentation / tutorial
   - add license
+  - implement full test
+        series -> fortran lookup tables -> fortran compiled
+        -> call from python -> compare to other method
 
 
 
