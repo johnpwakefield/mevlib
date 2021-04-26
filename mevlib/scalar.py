@@ -114,9 +114,10 @@ def psm_ptwise_xdir(a2, Lx, Ly, Lz, trunc, x, y, z):
     return 16.0 / np.pi**2 * np.sum(
         np.sin(np.pi * (2 * ms + 1) * y / Ly) *
         np.sin(np.pi * (2 * ns + 1) * z / Lz) *
-        np.cosh(betas * (x / Lx - 0.5)) / (
-            np.cosh(betas * 0.5) * (2 * ms + 1) * (2 * ns + 1)
-        )
+        (
+            #TODO add truncation for large values
+            np.cosh(betas * (x / Lx - 0.5)) / np.cosh(betas * 0.5)
+        ) / ((2 * ms + 1) * (2 * ns + 1))
     )
 
 def psm_ptwise(a2, Lx, Ly, Lz, truncs, x, y, z):
