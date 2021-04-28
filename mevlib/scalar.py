@@ -7,6 +7,10 @@ problem for a variety of shapes.
 
 import numpy as np
 from scipy.special import j0, j1, i0e, i1e, jn_zeros
+from scipy.linalg import solve
+from scipy.sparse.linalg import gmres, spsolve
+from scipy.sparse import dok_matrix as spmat
+from scipy.interpolate import RegularGridInterpolator as RGI
 
 
 # general functions
@@ -120,7 +124,7 @@ def psm_ptwise_xdir(a2, Lx, Ly, Lz, trunc, x, y, z):
         ) / ((2 * ms + 1) * (2 * ns + 1))
     )
 
-def psm_ptwise(a2, Lx, Ly, Lz, truncs, x, y, z):
+def psm_ptwise_series(a2, Lx, Ly, Lz, truncs, x, y, z):
     if np.isscalar(truncs):
         truncs = truncs, truncs, truncs
     else:
@@ -137,11 +141,23 @@ def psm_ptwise(a2, Lx, Ly, Lz, truncs, x, y, z):
 def psm_intgtd_xdir(a2, Lx, Ly, Lz, trunc):
     ms, ns = np.meshgrid(np.arange(trunc)[::-1], np.arange(trunc)[::-1])
     betas = psm_beta(a2, Lx, Ly, Lx, ms, ns)
-    return 32.0 / np.pi**4 * np.sum(
-        np.tanh(betas * 0.5) / (betas * (2 * ms + 1)**2 * (2 * ns + 1)**2)
-    )
+    cml = 0.0
+    for dg in range(2 * trunc - 1):
+        for k in range(trunc - abs(trunc - 1 - dg)):
+            if dg < trunc:
+                i, j = dg - k, k
+            else:
+                i, j = trunc - 1 - k, dg - trunc + 1 + k
+            cml += (
+                np.tanh(betas[i,j] * 0.5) /
+                (betas[i,j] * (2 * ms[i,j] + 1)**2 * (2 * ns[i,j] + 1)**2)
+            )
+    return 32.0 / np.pi**4 * cml
+#   return 32.0 / np.pi**4 * np.sum(
+#       np.tanh(betas * 0.5) / (betas * (2 * ms + 1)**2 * (2 * ns + 1)**2)
+#   )
 
-def psm_intgtd(a2, Lx, Ly, Lz, truncs):
+def psm_intgtd_series(a2, Lx, Ly, Lz, truncs):
     if np.isscalar(truncs):
         truncs = truncs, truncs, truncs
     else:
@@ -154,6 +170,154 @@ def psm_intgtd(a2, Lx, Ly, Lz, truncs):
             (Lz, Lx, Ly, truncs[2])
         ]
     ])
+
+def Tk(k, x):
+    return np.cos(k * np.arccos(x))
+def Tkxx(k, x):
+    return k * (
+        k * Tk(k, x) -
+        x * np.sin((k + 1) * np.arccos(x)) / np.sqrt(1.0 - x**2)
+    ) / (x**2 - 1.0)
+def phi(n, x):
+    return Tk(2 * (n + 1), x) - Tk(2 * n, x)
+def phixx(n, x):
+    return Tkxx(2 * (n + 1), x) - Tkxx(2 * n, x)
+
+def psm_spec_intmesh(Ns):
+    return np.meshgrid(*map(np.arange, Ns))
+
+def psm_spec_coeffs(a2, Lx, Ly, Lz, truncs):
+    if np.isscalar(truncs):
+        truncs = truncs, truncs, truncs
+    else:
+        assert(len(truncs) == 3)
+    Nx, Ny, Nz = truncs
+    xs, ys, zs = map(
+        lambda N: -np.cos(0.5 * np.pi * (1.0 + np.arange(N)) / N), [Nx, Ny, Nz]
+    )
+    xmesh, ymesh, zmesh = np.meshgrid(xs, ys, zs)
+    xflat, yflat, zflat = map(lambda arr: arr.flatten(), [xmesh, ymesh, zmesh])
+    del xmesh, ymesh, zmesh
+    mmesh, nmesh, pmesh = psm_spec_intmesh((Nx, Ny, Nz))
+    mflat, nflat, pflat = map(lambda arr: arr.flatten(), [mmesh, nmesh, pmesh])
+    del mmesh, nmesh, pmesh
+    mgrid, xgrid = np.meshgrid(mflat, xflat)
+    del mflat, xflat
+    ngrid, ygrid = np.meshgrid(nflat, yflat)
+    del nflat, yflat
+    pgrid, zgrid = np.meshgrid(pflat, zflat)
+    del pflat, zflat
+    xc, yc, zc = map(lambda L: 4.0 / L**2, [Lx, Ly, Lz])
+    H = (
+        a2 * phi(mgrid, xgrid) * phi(ngrid, ygrid) * phi(pgrid, zgrid)
+        - xc * phixx(mgrid, xgrid) * phi(ngrid, ygrid) * phi(pgrid, zgrid)
+        - yc * phi(mgrid, xgrid) * phixx(ngrid, ygrid) * phi(pgrid, zgrid)
+        - zc * phi(mgrid, xgrid) * phi(ngrid, ygrid) * phixx(pgrid, zgrid)
+    )
+    sol = solve(H, -a2 * np.ones((Nx * Ny * Nz, 1)))
+    sol, info = gmres(H, -a2 * np.ones((Nx * Ny * Nz, 1)), atol=1e-11, x0=sol)
+    return (Lx, Ly, Lz, sol.reshape((Nx, Ny, Nz)))
+
+def psm_spec_eval(coeffs, x, y, z):
+    xh, yh, zh = map(
+        lambda cL: (cL[0] - cL[1] / 2) / (cL[1] / 2),
+        zip((x, y, z), coeffs[:3])
+    )
+    mmesh, nmesh, pmesh = psm_spec_intmesh(coeffs[-1].shape)
+    return 1.0 + np.sum(
+        coeffs[-1] * phi(mmesh, xh) * phi(nmesh, yh) * phi(pmesh, zh)
+    )
+
+def psm_intgtd_spec_eval(coeffs):
+    Lx, Ly, Lz, coeffs = coeffs
+    mmesh, nmesh, pmesh = map(
+        lambda arr: arr[::-1, ::-1, ::-1], psm_spec_intmesh(coeffs.shape)
+    )
+    return 1.0 - 64.0 * np.sum(
+        coeffs[::-1, ::-1, ::-1] * (
+            (1.0 - 4 * mmesh**2) * (3.0 + 2.0 * mmesh) *
+            (1.0 - 4 * nmesh**2) * (3.0 + 2.0 * nmesh) *
+            (1.0 - 4 * pmesh**2) * (3.0 + 2.0 * pmesh)
+        )**(-1)
+    )
+
+def psm_intgtd_spec(a2, Lx, Ly, Lz, truncs, coeffs=None):
+    if coeffs is None:
+        coeffs = psm_spec_coeffs(a2, Lx, Ly, Lz, truncs)
+    return psm_intgtd_spec_eval(coeffs)
+
+def psm_diff_axes(Lx, Ly, Lz, Nx, Ny, Nz):
+    xs, ys, zs = map(
+        lambda LN: LN[0] * (0.5 + np.arange(LN[1])) / LN[1],
+        [(Lx, Nx), (Ly, Ny), (Lz, Nz)]
+    )
+    return xs, ys, zs
+
+def psm_diff_coeffs(a2, Lx, Ly, Lz, truncs):
+    if np.isscalar(truncs):
+        truncs = truncs, truncs, truncs
+    else:
+        assert(len(truncs) == 3)
+    Nx, Ny, Nz = truncs
+    xs, ys, zs = psm_diff_axes(Lx, Ly, Lz, Nx, Ny, Nz)
+    hx, hy, hz = xs[1] - xs[0], ys[1] - ys[0], zs[1] - zs[0]
+    A = spmat((Nx * Ny * Nz, Nx * Ny * Nz))
+    rhs = np.zeros((Nx, Ny, Nz))
+    for m in range(Nx):
+        for n in range(Ny):
+            for p in range(Nz):
+                row = np.zeros((Nx, Ny, Nz))
+                row[m,n,p] = -2.0 * (hx**-2 + hy**-2 + hz**-2 + a2 / 2)
+                if m + 1 != Nx:
+                    row[m+1,n,p] = hx**-2
+                else:
+                    rhs[m,n,p] = -hx**-2
+                if m != 0:
+                    row[m-1,n,p] = hx**-2
+                else:
+                    rhs[m,n,p] = -hx**-2
+                if n + 1 != Ny:
+                    row[m,n+1,p] = hy**-2
+                else:
+                    rhs[m,n,p] = -hy**-2
+                if n != 0:
+                    row[m,n-1,p] = hy**-2
+                else:
+                    rhs[m,n,p] = -hy**-2
+                if p + 1 != Nz:
+                    row[m,n,p+1] = hz**-2
+                else:
+                    rhs[m,n,p] = -hz**-2
+                if p != 0:
+                    row[m,n,p-1] = hz**-2
+                else:
+                    rhs[m,n,p] = -hz**-2
+                A[np.ravel_multi_index((m, n, p), (Nx, Ny, Nz)), :] = (
+                    row.flatten()
+                )
+    rhs = rhs.flatten()
+    return (Lx, Ly, Lz, spsolve(A, rhs).reshape((Nx, Ny, Nz)))
+
+def psm_diff_eval(coeffs, x, y, z):
+    Lx, Ly, Lz = coeffs[:3]
+    Nx, Ny, Nz = coeffs[-1].shape
+    xs, ys, zs = psm_diff_axes(Lx, Ly, Lz, Nx, Ny, Nz)
+    cfs = coeffs[-1].flatten().reshape((Nx, Ny, Nz), order='F')
+    interp = RGI((xs, ys, zs), cfs, bounds_error=False, fill_value=-1)
+    return interp([x, y, z])
+
+def psm_intgtd_diff_eval(coeffs):
+    Lx, Ly, Lz = coeffs[:3]
+    Nx, Ny, Nz = coeffs[-1].shape
+    return np.sum(coeffs[-1]) / (Nx * Ny * Nz)
+
+def psm_intgtd_diff(a2, Lx, Ly, Lz, truncs, coeffs=None):
+    if coeffs is None:
+        coeffs = psm_diff_coeffs(a2, Lx, Ly, Lz, truncs)
+    return psm_intgtd_diff_eval(coeffs)
+
+psm_ptwise = psm_ptwise_series
+psm_intgtd = psm_intgtd_series
 
 
 # sphere functions

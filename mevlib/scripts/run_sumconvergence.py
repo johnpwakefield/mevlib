@@ -9,7 +9,8 @@ import numpy as np
 
 from mevlib.scalar import sum_standard, sum_aitken
 from mevlib.scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
-from mevlib.scalar import psm_intgtd_xdir
+from mevlib.scalar import psm_intgtd_xdir, psm_intgtd_spec
+from mevlib.scalar import psm_intgtd_diff
 from mevlib.scripts import imgpath, showfigs
 
 
@@ -17,14 +18,18 @@ plt.rc('text', usetex=True)
 plt.rc('axes', labelsize=12)
 
 
-markers = cycle(['o', 'v', '>', '<', '^', 's', 'P', '*', 'X', 'd'])
+markers = cycle(['v', '>', '<', '^', 's', 'P', '*', 'X', 'd'])
 
 
 a2 = 0.8**2
 R, H = 80.0, 360.0
 Lx, Ly, Lz = 120.0, 120.0, 360.0
-rttruncs = np.array(list(range(2, 20, 1)))
 nexact, kexact, pexact = 400, 800, 800
+
+cyltrunc = np.array(list(range(3, 16)))
+psmseriestrunc = np.array(list(range(3, 12)))
+psmspectrunc = np.array(list(range(4, 8)))
+psmdifftrunc = np.array(list(range(4, 8)))
 
 
 # cost units based on optimes.jl results
@@ -52,10 +57,18 @@ def cyl_rd_akn_cost(K):
     return cyl_rd_std_cost(K + 2) + (2 * K - 1) * (mult_cost + divi_cost)
 
 def psm_xd_cost(N):
-    return 3 * mult_cost + N * (
+    return 3 * mult_cost + N**2 * (
         26 * mult_cost + 7 * divi_cost + 4 * expn_cost
         + root_cost + 2 * sine_cost
     )
+
+def psm_spec_cost(N):
+    #TODO
+    return N
+
+def psm_diff_cost(N):
+    #TODO
+    return N
 
 
 cyl_radial_exact = sum_standard(cyl_intgtd_radial_terms(a2, R, H, nexact))
@@ -64,54 +77,87 @@ psm_radial_exact = psm_intgtd_xdir(a2, Ly, Lx, Lz, pexact)
 psm_axial_exact = psm_intgtd_xdir(a2, Lx, Ly, Lz, pexact)
 
 
-methods = [     # name, valuefunction, exact, cost function
+methods = [
+    # name, valuefunction, exact, termadj, cost function, number of terms
+#   (
+#       "Cylinder - Radial - Standard",
+#       lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
+#       cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
+#   ),
+#   (
+#       "Cylinder - Axial - Standard",
+#       lambda tk: sum_standard(cyl_intgtd_axial_terms(a2, R, H, tk)),
+#       cyl_axial_exact, lambda tk: tk, cyl_ax_std_cost, cyltrunc
+#   ),
+#   (
+#       "Cylinder - Radial - Aitken",
+#       lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
+#       cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
+#   ),
+#   (
+#       "Cylinder - Axial - Aitken",
+#       lambda tk: sum_aitken(cyl_intgtd_axial_terms(a2, R, H, tk)),
+#       cyl_axial_exact, lambda tk: tk, cyl_ax_akn_cost, cyltrunc
+#   ),
+#   (
+#       "Prism - Radial - Series",      # one on cross-section
+#       lambda rtk: 2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk),
+#       2 * psm_radial_exact, lambda rtk: rtk**2, lambda n: 2 * psm_xd_cost(n),
+#       psmseriestrunc
+#   ),
+#   (
+#       "Prism - Axial - Series",       # one on ends
+#       lambda rtk: psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk),
+#       psm_axial_exact, lambda rtk: rtk**2, psm_xd_cost,
+#       psmseriestrunc
+#   ),
     (
-        "Cylinder - Radial - Standard",
-        lambda rtk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, rtk**2)),
-        cyl_radial_exact, cyl_rd_std_cost
+        "Prism - Total - Series",
+        lambda rtk: (
+            2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk)
+            + psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk)
+        ),
+        2 * psm_radial_exact + psm_axial_exact,
+        lambda rtk: rtk**2, psm_xd_cost,
+        psmseriestrunc
     ),
     (
-        "Cylinder - Axial - Standard",
-        lambda rtk: sum_standard(cyl_intgtd_axial_terms(a2, R, H, rtk**2)),
-        cyl_axial_exact, cyl_ax_std_cost
+        "Prism - Pseudospectral",
+        lambda tk: psm_intgtd_spec(a2, Lx, Ly, Lz, tk),
+        2 * psm_radial_exact + psm_axial_exact,
+        lambda tk: tk**2, lambda n: psm_spec_cost(n), psmspectrunc
     ),
-    (
-        "Cylinder - Radial - Aitken",
-        lambda rtk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, rtk**2)),
-        cyl_radial_exact, cyl_rd_akn_cost
-    ),
-    (
-        "Cylinder - Axial - Aitken",
-        lambda rtk: sum_aitken(cyl_intgtd_axial_terms(a2, R, H, rtk**2)),
-        cyl_axial_exact, cyl_ax_akn_cost
-    ),
-    (
-        "Prism - Radial",       # one on cross-section
-        lambda rtk: 2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk),
-        2 * psm_radial_exact, lambda n: 2 * psm_xd_cost(n)
-    ),
-    (
-        "Prism - Axial",        # one on ends
-        lambda rtk: psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk),
-        psm_axial_exact, psm_xd_cost
-    )
+#   (
+#       "Prism - Finite Difference",
+#       lambda tk: psm_intgtd_diff(a2, Lx, Ly, Lz, tk),
+#       2 * psm_radial_exact + psm_axial_exact,
+#       lambda tk: tk**2, lambda n: psm_diff_cost(n), psmdifftrunc
+#   )
 ]
 
 
 fig1, ax1 = plt.subplots(1, 1)
 fig2, ax2 = plt.subplots(1, 1)
-for i, (label, method, exact, cost) in enumerate(methods):
+fig3, ax3 = plt.subplots(1, 1)
+for i, (label, method, exact, termadj, cost, truncs) in enumerate(methods):
     mkr = next(markers)
     ax1.semilogy(
-        rttruncs**2,
-        [abs(method(rtk) - exact) / exact for rtk in rttruncs],
-        "C{}{}".format(i+1, mkr), label=label
+        termadj(truncs),
+        [abs(method(tk) - exact) / exact for tk in truncs],
+        "C{}{}".format((i % 9) + 1, mkr), label=label
     )
     ax2.semilogy(
-        cost(rttruncs**2),
-        [abs(method(rtk) - exact) / exact for rtk in rttruncs],
-        "C{}{}".format(i+1, mkr), label=label
+        cost(truncs),
+        [abs(method(tk) - exact) / exact for tk in truncs],
+        "C{}{}".format((i % 9) + 1, mkr), label=label
     )
+    ax3.semilogy(
+        termadj(truncs), [method(tk) for tk in truncs],
+        "C{}{}".format((i % 9) + 1, mkr), label=label
+    )
+    print(label)
+    print([method(tk) for tk in truncs])
+    print(exact)
 ax1.set_xlabel("Number of Terms")
 ax1.set_ylabel("Relative Error")
 ax1.legend()
@@ -120,10 +166,13 @@ ax2.set_xlabel("Estimated Cost")
 ax2.set_ylabel("Relative Error")
 ax2.legend()
 ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 4))
+ax3.set_xlabel("Number of Terms")
+ax3.set_ylabel("Effectiveness Factor")
+ax3.legend()
 
 
 if not showfigs():
-    for n, fig in [('nterms', fig1), ('cost', fig2)]:
+    for n, fig in [('nterms', fig1), ('cost', fig2), ('efactor', fig3)]:
         fig.tight_layout()
         for ext in ['svg', 'pdf']:
             fig.savefig(imgpath("sumconv-{}.{}".format(n, ext)))

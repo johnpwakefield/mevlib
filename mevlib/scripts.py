@@ -10,6 +10,6 @@ def imgpath(fn):
 
 
 def showfigs():
-    return False
+    return True
 
 
