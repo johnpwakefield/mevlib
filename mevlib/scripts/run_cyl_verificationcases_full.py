@@ -41,9 +41,11 @@ Ns = np.arange(1, 42, 4)
 l2errs = [None for c in cases]
 
 
-fig, axs = plt.subplots(5, 2, figsize=(8.0, 14.5))
+multfig, multaxs = plt.subplots(5, 2, figsize=(8.0, 14.5))
+singfigs, singaxs = zip(*[
+    plt.subplots(1, 2, figsize=(9.0, 4.0)) for i in range(5)
+])
 for i, ((R, H, L, phi2, cphi2), fn) in enumerate(zip(cases, fns)):
-    cms = [None, None]
     def solfunc(r, z, n=nexact, k=kexact):
         return np.vectorize(cyl_ptwise)(
             phi2, R / L, H / L, n, k, r / L, z / L
@@ -67,42 +69,51 @@ for i, ((R, H, L, phi2, cphi2), fn) in enumerate(zip(cases, fns)):
     meldsoln = np.vstack((np.flip(versoln, axis=0), oursoln))
     meldrmesh = np.vstack((refsoln['rmesh'] - R, refsoln['rmesh']))
     meldzmesh = np.vstack((refsoln['zmesh'], refsoln['zmesh']))
-    cms[0] = axs[i, 0].contourf(meldrmesh, meldzmesh, meldsoln)
-    axs[i, 0].axvline(x=0.0, color='r')
-    err = np.abs(oursoln - versoln) / versoln
-#   print("Case {} error range ({}, {})".format(i+1, err.min(), err.max()))
-    lvls = np.power(10.0, np.arange(
-        np.floor(np.log10(err.min()) - 1), np.ceil(np.log10(err.max()) + 1)
-    ))
-    cms[1] = axs[i, 1].contourf(
-        refsoln['rmesh'], refsoln['zmesh'], err, lvls, norm=colors.LogNorm()
-    )
-    axs[i, 0].set_title("Solution Comparison")
-    axs[i, 1].set_title("Relative Error")
-    cbs = [plt.colorbar(cm, ax=ax) for ax, cm in zip(axs[i,:], cms)]
-    for ax in axs[i, :]:
+    for lax, rax in [
+        (multaxs[i, 0], multaxs[i, 1]),
+        (singaxs[i][0], singaxs[i][1])
+    ]:
+        cms = [None, None]
+        cms[0] = lax.contourf(meldrmesh, meldzmesh, meldsoln)
+        lax.axvline(x=0.0, color='r')
+        err = np.abs(oursoln - versoln) / versoln
+    #   print("Case {} error range ({}, {})".format(i+1, err.min(), err.max()))
+        lvls = np.power(10.0, np.arange(
+            np.floor(np.log10(err.min()) - 1), np.ceil(np.log10(err.max()) + 1)
+        ))
+        cms[1] = rax.contourf(
+            refsoln['rmesh'], refsoln['zmesh'], err,
+            lvls, norm=colors.LogNorm(),
+            cmap='winter'
+        )
+        lax.set_title("Solution Comparison")
+        rax.set_title("Relative Error")
+        # these colorbars are the same for each set
+        cbs = [plt.colorbar(cm, ax=ax) for ax, cm in zip([lax, rax], cms)]
+    for ax in multaxs[i, :]:
         ax.set_xlabel(r"\( r \)")
         ax.set_ylabel(r"\( z \)")
-fig.tight_layout()
-for ext in ['svg', 'pdf']:
-    fig.savefig("img/comparison_cases." + ext)
+multfig.tight_layout()
 
 
-fig, ax = plt.subplots(1, 1, figsize=(6.0, 6.0))
+l2fig, l2ax = plt.subplots(1, 1, figsize=(6.0, 6.0))
 for i, (errs, mkr) in enumerate(zip(l2errs, ['x', 'o', '+', '<', '>'])):
-    ax.semilogy(
+    l2ax.semilogy(
         Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
     )
-ax.grid()
-ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
-ax.set_ylabel(r"\( L^2 \) error")
-ax.legend()
+l2ax.grid()
+l2ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
+l2ax.set_ylabel(r"\( L^2 \) error")
+l2ax.legend()
 
 
 if showfigs():
     plt.show()
 else:
     for ext in ['svg', 'pdf']:
-        fig.savefig(imgpath("comparison_l2errs." + ext))
+        l2fig.savefig(imgpath("comparison_l2errs.{}".format(ext)))
+        multfig.savefig(imgpath("comparison_cases.{}".format(ext)))
+        for i, fig in enumerate(singfigs):
+            fig.savefig(imgpath("comparison_case{}.{}".format(i+1, ext)))
 
 

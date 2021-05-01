@@ -19,7 +19,7 @@ plt.rc('axes', labelsize=12)
 a2 = 1.2**2
 Lx, Ly, Lz = 0.3, 0.4, 1.7
 #series_trunc, spec_trunc, diff_trunc = 32, 16, 2
-series_trunc, spec_trunc, diff_trunc = 8, 4, 32
+series_trunc, spec_trunc, diff_trunc = 8, 4, 12
 xs = np.linspace(0.0, Lx, 80)
 ys = np.linspace(0.0, Ly, 81)
 z = Lz / 3
@@ -36,8 +36,12 @@ for i, (c1, c2, c3, L1, L2, L3) in enumerate([
         xmesh, ymesh,
         np.vectorize(psm_ptwise_xdir)(a2, L1, L2, L3, series_trunc, c1, c2, c3)
     )
+    axs4[i].set_title(r"\( u^{}(x, y, z^*) \)".format(["x", "y", "z"][i]))
+    axs4[i].set_xlabel(r"\( x \)")
+    axs4[i].set_ylabel(r"\( y \)")
+fig4.tight_layout()
 
-fig5, ax5 = plt.subplots(1, 3, figsize=(3.0,3.0))
+fig5, ax5 = plt.subplots(1, 3, figsize=(9.0,3.0))
 vals = np.vectorize(psm_ptwise_series)(
     a2, Lx, Ly, Lz, series_trunc, xmesh, ymesh, z
 )
