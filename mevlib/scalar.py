@@ -96,6 +96,8 @@ def cyl_intgtd_axial_terms(a2, R, H, trunc, zero_cache=None):
     lnks = cyl_ln(a2, R, alpha)
     return 8.0 * np.tanh(lnks * H / 2) / (H * lnks * alpha**2)
 
+#TODO functions like this might be confusing since they aren't used directly
+# in shapes.py
 def cyl_intgtd(a2, R, H, ntrunc, ktrunc, bratcutoff=None, zero_cache=None):
     return sum(map(sum_standard, [
         cyl_intgtd_radial_terms(a2, R, H, ntrunc, bratcutoff=bratcutoff),
