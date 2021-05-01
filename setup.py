@@ -14,7 +14,9 @@ Generates pre-computed maps from free stream concentration to Multistep
 Effectiveness Vector (MEV) for use in CFD-DEM models for chemical reactions
 (e.g. packed-bed catalysis/pyrolysis).
     """,
-    packages=["mevlib"]
+    packages=["mevlib"],
+    #TODO it would probably be better to use the console_scripts entry point
+    scripts=["make_table"]
 )
 
 
