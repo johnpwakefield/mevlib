@@ -89,6 +89,8 @@ TODO
   - several of the scripts in "scripts" are actually tests, make these into
     tests and move them into the tests directory
   - scripts should have a function as an entry point
+  - many scripts should maybe be "examples"
+  - the scripts.py file referenced by scripts is kinda wonky
 
 
 
