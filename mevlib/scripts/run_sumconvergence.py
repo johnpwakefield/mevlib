@@ -18,7 +18,7 @@ plt.rc('text', usetex=True)
 plt.rc('axes', labelsize=12)
 
 
-markers = cycle(['v', '>', '<', '^', 's', 'P', '*', 'X', 'd'])
+markers = cycle(['v', '>', '<', '^', 's', 'd', '*', 'X', '+'])
 
 
 a2 = 0.8**2
@@ -26,8 +26,8 @@ R, H = 80.0, 360.0
 Lx, Ly, Lz = 120.0, 120.0, 360.0
 nexact, kexact, pexact = 400, 800, 800
 
-cyltrunc = np.array(list(range(3, 16)))
-psmseriestrunc = np.array(list(range(3, 12)))
+cyltrunc = np.array(list(range(3, 24)))
+psmseriestrunc = np.array(list(range(3, 8)))
 psmspectrunc = np.array(list(range(4, 8)))
 psmdifftrunc = np.array(list(range(4, 8)))
 
@@ -79,54 +79,54 @@ psm_axial_exact = psm_intgtd_xdir(a2, Lx, Ly, Lz, pexact)
 
 methods = [
     # name, valuefunction, exact, termadj, cost function, number of terms
-#   (
-#       "Cylinder - Radial - Standard",
-#       lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
-#       cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
-#   ),
-#   (
-#       "Cylinder - Axial - Standard",
-#       lambda tk: sum_standard(cyl_intgtd_axial_terms(a2, R, H, tk)),
-#       cyl_axial_exact, lambda tk: tk, cyl_ax_std_cost, cyltrunc
-#   ),
-#   (
-#       "Cylinder - Radial - Aitken",
-#       lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
-#       cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
-#   ),
-#   (
-#       "Cylinder - Axial - Aitken",
-#       lambda tk: sum_aitken(cyl_intgtd_axial_terms(a2, R, H, tk)),
-#       cyl_axial_exact, lambda tk: tk, cyl_ax_akn_cost, cyltrunc
-#   ),
-#   (
-#       "Prism - Radial - Series",      # one on cross-section
-#       lambda rtk: 2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk),
-#       2 * psm_radial_exact, lambda rtk: rtk**2, lambda n: 2 * psm_xd_cost(n),
-#       psmseriestrunc
-#   ),
-#   (
-#       "Prism - Axial - Series",       # one on ends
-#       lambda rtk: psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk),
-#       psm_axial_exact, lambda rtk: rtk**2, psm_xd_cost,
-#       psmseriestrunc
-#   ),
     (
-        "Prism - Total - Series",
-        lambda rtk: (
-            2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk)
-            + psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk)
-        ),
-        2 * psm_radial_exact + psm_axial_exact,
-        lambda rtk: rtk**2, psm_xd_cost,
+        "Cylinder - Radial - Standard",
+        lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
+        cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
+    ),
+    (
+        "Cylinder - Radial - Aitken",
+        lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
+        cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
+    ),
+    (
+        "Cylinder - Axial - Standard",
+        lambda tk: sum_standard(cyl_intgtd_axial_terms(a2, R, H, tk)),
+        cyl_axial_exact, lambda tk: tk, cyl_ax_std_cost, cyltrunc
+    ),
+    (
+        "Cylinder - Axial - Aitken",
+        lambda tk: sum_aitken(cyl_intgtd_axial_terms(a2, R, H, tk)),
+        cyl_axial_exact, lambda tk: tk, cyl_ax_akn_cost, cyltrunc
+    ),
+    (
+        "Prism - Radial - Series",      # one on cross-section
+        lambda rtk: 2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk),
+        2 * psm_radial_exact, lambda rtk: rtk**2, lambda n: 2 * psm_xd_cost(n),
         psmseriestrunc
     ),
     (
-        "Prism - Pseudospectral",
-        lambda tk: psm_intgtd_spec(a2, Lx, Ly, Lz, tk),
-        2 * psm_radial_exact + psm_axial_exact,
-        lambda tk: tk**2, lambda n: psm_spec_cost(n), psmspectrunc
+        "Prism - Axial - Series",       # one on ends
+        lambda rtk: psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk),
+        psm_axial_exact, lambda rtk: rtk**2, psm_xd_cost,
+        psmseriestrunc
     ),
+#   (
+#       "Prism - Total - Series",
+#       lambda rtk: (
+#           2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk)
+#           + psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk)
+#       ),
+#       2 * psm_radial_exact + psm_axial_exact,
+#       lambda rtk: rtk**2, psm_xd_cost,
+#       psmseriestrunc
+#   ),
+#   (
+#       "Prism - Pseudospectral",
+#       lambda tk: psm_intgtd_spec(a2, Lx, Ly, Lz, tk),
+#       2 * psm_radial_exact + psm_axial_exact,
+#       lambda tk: tk**2, lambda n: psm_spec_cost(n), psmspectrunc
+#   ),
 #   (
 #       "Prism - Finite Difference",
 #       lambda tk: psm_intgtd_diff(a2, Lx, Ly, Lz, tk),
@@ -158,14 +158,17 @@ for i, (label, method, exact, termadj, cost, truncs) in enumerate(methods):
     print(label)
     print([method(tk) for tk in truncs])
     print(exact)
+ax1.grid()
 ax1.set_xlabel("Number of Terms")
 ax1.set_ylabel("Relative Error")
 ax1.legend()
 ax1.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 4))
+ax2.grid()
 ax2.set_xlabel("Estimated Cost")
 ax2.set_ylabel("Relative Error")
 ax2.legend()
 ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 4))
+ax3.grid()
 ax3.set_xlabel("Number of Terms")
 ax3.set_ylabel("Effectiveness Factor")
 ax3.legend()
