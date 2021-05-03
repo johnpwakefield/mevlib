@@ -1,36 +1,5 @@
 
 
-PRECISION
-
-TYPE TRUNC
-
-NTRUNC  64
-KTRUNC  128
-
-END
-
-
-SHAPE
-
-TYPE CYLINDER
-
-RADIUS  80
-HEIGHT  550
-
-END
-
-
-TEMPERATURE
-
-TYPE UNIFORM
-
-START   500.0
-STOP    900.0
-NUM     800
-
-END
-
-
 DIFFUSION
 
 TYPE KNUDSEN        # other types to be added; this is the default

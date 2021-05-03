@@ -5,8 +5,8 @@ import numpy as np
 
 import plotly.graph_objects as go
 
-from mevlib.scalar import cyl_ptwise
-from mevlib.scripts import imgpath, showfigs
+from mevlib.shapes import Cylinder
+from mevlib.options import imgpath
 
 
 a2 = 0.8**2
@@ -20,6 +20,7 @@ slicetrunc = 80
 N = 240
 yc = R / 8
 zc = 0.4*H
+cyl = Cylinder(R, H)
 
 
 fullscale = [
@@ -38,14 +39,17 @@ cyl1u = np.zeros_like(cyl1theta)
 
 flat1theta, flat1r = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
 flat1z = zc * np.ones_like(flat1theta)
-flat1u = np.vectorize(cyl_ptwise)(a2, R, H, slicetrunc, slicetrunc, flat1r, zc)
+flat1u = np.vectorize(cyl.ptwise)(
+    a2, {'ntrunc': slicetrunc, 'ktrunc': slicetrunc}, flat1r, zc
+)
 flat1u[flat1r*np.sin(flat1theta) < -yc] = 0.0
 
 cyl2theta, cyl2z = np.mgrid[0:2*np.pi:N*1j,zc:H:N*1j]
 cyl2x = R * np.cos(cyl2theta)
 cyl2y = np.minimum(R * np.sin(cyl2theta), yc)
-cyl2u = np.vectorize(cyl_ptwise)(
-    a2, R, H, slicetrunc, slicetrunc, np.sqrt(cyl2x**2 + cyl2y**2), cyl2z
+cyl2u = np.vectorize(cyl.ptwise)(
+    a2, {'ktrunc': slicetrunc, 'ntrunc': slicetrunc},
+    np.sqrt(cyl2x**2 + cyl2y**2), cyl2z
 )
 cyl2u[cyl2y != yc] = 1e-7
 print(np.max(cyl2u), np.min(cyl2u))
@@ -85,10 +89,7 @@ fig8.update_layout(
 )
 
 
-if not showfigs():
-    for i, fig in enumerate([fig8]):
-        fig.write_html(imgpath("volrender-fig{}.html".format(8+i)))
-else:
-    plt.show()
+for i, fig in enumerate([fig8]):
+    fig.write_html(imgpath("volrender-fig{}.html".format(8+i)))
 
 

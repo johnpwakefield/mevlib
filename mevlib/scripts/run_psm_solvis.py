@@ -7,9 +7,8 @@ from matplotlib import pyplot as plt
 
 from mevlib.scalar import psm_ptwise_xdir, psm_ptwise_series
 from mevlib.scalar import psm_spec_coeffs, psm_spec_eval
-from mevlib.scalar import psm_diff_coeffs, psm_diff_eval
-from mevlib.scalar import psm_diff_axes
-from mevlib.scripts import imgpath, showfigs
+from mevlib.scalar import psm_diff_coeffs, psm_diff_axes
+from mevlib.options import imgpath, showfigs
 
 
 plt.rc('text', usetex=True)
@@ -43,7 +42,7 @@ fig4.tight_layout()
 
 fig5, ax5 = plt.subplots(1, 3, figsize=(9.0,3.0))
 vals = np.vectorize(psm_ptwise_series)(
-    a2, Lx, Ly, Lz, series_trunc, xmesh, ymesh, z
+    a2, Lx, Ly, Lz, series_trunc, series_trunc, series_trunc, xmesh, ymesh, z
 )
 vals[np.logical_and(
     np.minimum(xmesh, Lx - xmesh) < 0.05 * Lx,

@@ -126,17 +126,13 @@ def psm_ptwise_xdir(a2, Lx, Ly, Lz, trunc, x, y, z):
         ) / ((2 * ms + 1) * (2 * ns + 1))
     )
 
-def psm_ptwise_series(a2, Lx, Ly, Lz, truncs, x, y, z):
-    if np.isscalar(truncs):
-        truncs = truncs, truncs, truncs
-    else:
-        assert(len(truncs) == 3)
+def psm_ptwise_series(a2, Lx, Ly, Lz, xtrunc, ytrunc, ztrunc, x, y, z):
     return sum([
         psm_ptwise_xdir(a2, L1, L2, L3, trunc, c1, c2, c3)
         for c1, c2, c3, L1, L2, L3, trunc in [
-            (x, y, z, Lx, Ly, Lz, truncs[0]),
-            (y, z, x, Ly, Lz, Lx, truncs[1]),
-            (z, x, y, Lz, Lx, Ly, truncs[2])
+            (x, y, z, Lx, Ly, Lz, xtrunc),
+            (y, z, x, Ly, Lz, Lx, ytrunc),
+            (z, x, y, Lz, Lx, Ly, ztrunc)
         ]
     ])
 
@@ -159,17 +155,11 @@ def psm_intgtd_xdir(a2, Lx, Ly, Lz, trunc):
 #       np.tanh(betas * 0.5) / (betas * (2 * ms + 1)**2 * (2 * ns + 1)**2)
 #   )
 
-def psm_intgtd_series(a2, Lx, Ly, Lz, truncs):
-    if np.isscalar(truncs):
-        truncs = truncs, truncs, truncs
-    else:
-        assert(len(truncs) == 3)
+def psm_intgtd_series(a2, Lx, Ly, Lz, xtrunc, ytrunc, ztrunc):
     return sum([
         psm_intgtd_xdir(a2, L1, L2, L3, trunc)
         for L1, L2, L3, trunc in [
-            (Lx, Ly, Lz, truncs[0]),
-            (Ly, Lz, Lx, truncs[1]),
-            (Lz, Lx, Ly, truncs[2])
+            (Lx, Ly, Lz, xtrunc), (Ly, Lz, Lx, ytrunc), (Lz, Lx, Ly, ztrunc)
         ]
     ])
 

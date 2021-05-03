@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mevlib.scalar import sph_ptwise
 
-from mevlib.scripts import imgpath, showfigs
+from mevlib.options import imgpath, showfigs
 
 
 R = 120.0

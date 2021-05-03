@@ -6,7 +6,7 @@ import pkgutil
 import argparse
 from tqdm import tqdm
 
-
+from mevlib.diagonalization import computetransform
 from mevlib.parsing.auto import parse_dynamic
 
 
@@ -79,8 +79,8 @@ def main():
 #           "{}-vector."
 #       ).format())
     matrices = [
-        shape.computetransform(
-            mech, T, precision['ntrunc'], precision['ktrunc'],
+        computetransform(
+            shape, mech, T, precision,
             dropnonreacting=(not args.keepnonreacting)
         )
         for T in (tqdm(temperatures) if args.verbose else temperatures)

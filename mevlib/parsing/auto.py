@@ -1,6 +1,6 @@
 
 
-from mevlib.parsing.sbl import parse_sensible
+from mevlib.parsing.sbl import parse_sensible, SBLParsingException
 
 
 # file parsing
@@ -30,7 +30,7 @@ def parse_attempt(f, ext, verb):
         if verb:
             print("Input successfully parsed as a {} file.".format(name))
         return params
-    except (FileTypeException,) as err:
+    except (SBLParsingException,) as err:
         print("File could not be parsed as a {} file.".format(name))
         print(err)
         return None
@@ -50,3 +50,5 @@ def parse_dynamic(f, verb):
                 return params
     print("Unable to parse input file.")
     raise Exception("Unable to parse input file.")
+
+

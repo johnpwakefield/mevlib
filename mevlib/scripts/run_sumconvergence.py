@@ -11,7 +11,7 @@ from mevlib.scalar import sum_standard, sum_aitken
 from mevlib.scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
 from mevlib.scalar import psm_intgtd_xdir, psm_intgtd_spec
 from mevlib.scalar import psm_intgtd_diff
-from mevlib.scripts import imgpath, showfigs
+from mevlib.options import imgpath, showfigs
 
 
 plt.rc('text', usetex=True)

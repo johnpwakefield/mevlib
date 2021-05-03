@@ -2,14 +2,17 @@
 
 from abc import ABC
 
-import numpy as np
-import mevlib.scalar as scalar
+#import numpy as np
 from scipy.special import jn_zeros
+from mevlib.scalar import sum_standard
+from mevlib.scalar import sph_ptwise, sph_intgtd
+from mevlib.scalar import cyl_ptwise_radial_terms
+from mevlib.scalar import cyl_ptwise_axial_terms
+from mevlib.scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
+from mevlib.scalar import psm_ptwise_series, psm_intgtd_series
 
-# the scipy linear algebra package has some advantages, but this can but
-# substituted for the numpy version if scipy is not available
-from scipy import linalg as la
 
+# shapes
 
 class Shape(ABC):
     pass
@@ -21,24 +24,12 @@ class Sphere(Shape):
             charlen = R / 3
         self.R, self.charlen = R, charlen
 
-    def s(self, a2):
-        return scalar.sph_intgtd(a2, self.R)
+    def ptwise(self, a2, r):
+        return sph_ptwise(a2, self.R, r)
 
-    def computetransform(self, mech, T, dropnonreacting=False):
-        #TODO extract most of this diagonalization process to a function or the superclass
-        #TODO interrogate the Mechanism object to choose an ideal method
-        lams, R = la.eig(mech.getmatrix(self.charlen, T))
-        if np.max(np.abs(lams.imag)) > 1e-8:
-            print("Matrix has imaginary eigenvalues (irreversible).")
-        lams, R = np.real_if_close(lams), np.real_if_close(R)
-        mult = np.array([
-            1.0 if lam == 0.0 else self.s(lam) for lam in lams
-        ])
-        A = np.dot(R, np.dot(np.diag(mult), la.inv(R)))
-        if dropnonreacting:
-            return A[:mech.getnumactive(), :]
-        else:
-            return A
+    def intgtd(self, a2, precision=None):
+        # precision included for consistency; not needed here
+        return sph_intgtd(a2, self.R)
 
 class Cylinder(Shape):
 
@@ -47,34 +38,71 @@ class Cylinder(Shape):
             charlen = 0.5 * (R * H / (R + H))
         self.R, self.H, self.charlen, self.zero_cache = R, H, charlen, None
 
-    def gn(self, a2, n):
-        return np.sqrt(a2 + (np.pi * (2 * n + 1) / self.H)**2)
+    def ptwise_radial_terms(self, a2, trunc, r, z):
+        return cyl_ptwise_radial_terms(a2, self.R, self.H, trunc, r, z)
 
-    def ln(self, a2, alphak):
-        return np.sqrt(a2 + (alphak / self.R)**2)
+    def ptwise_axial_terms(self, a2, trunc, r, z):
+        if self.zero_cache is None or len(self.zero_cache) < trunc:
+            self.zero_cache = jn_zeros(0, trunc)
+        return cyl_ptwise_axial_terms(
+            a2, self.R, self.H, trunc, r, z, zero_cache=self.zero_cache
+        )
 
-    def s(self, a2, ntrunc, ktrunc):
-        if self.zero_cache is None or len(self.zero_cache) < ktrunc:
-            self.zero_cache = jn_zeros(0, ktrunc)
-        return sum(map(scalar.sum_standard, [
-            scalar.cyl_intgtd_radial_terms(a2, self.R, self.H, ntrunc),
-            scalar.cyl_intgtd_axial_terms(
-                a2, self.R, self.H, ktrunc, zero_cache=self.zero_cache
-            )
+    def ptwise_radial(self, a2, ntrunc, r, z):
+        return sum_standard(self.ptwise_radial_terms(a2, ntrunc, r, z))
+
+    def ptwise_axial(self, a2, ktrunc, r, z):
+        return sum_standard(self.ptwise_axial_terms(a2, ktrunc, r, z))
+
+    def ptwise(self, a2, precision, r, z):
+        return sum(map(sum_standard, [
+            self.ptwise_radial_terms(a2, precision['ntrunc'], r, z),
+            self.ptwise_axial_terms(a2, precision['ktrunc'], r, z)
         ]))
 
-    def computetransform(self, mech, T, ntrunc, ktrunc, dropnonreacting=False):
-        #TODO interrogate the Mechanism object to choose an ideal method
-        lams, R = la.eig(mech.getmatrix(self.charlen, T))
-        if np.max(np.abs(lams.imag)) > 1e-8:
-            print("Matrix has imaginary eigenvalues (irreversible).")
-        lams, R = np.real_if_close(lams), np.real_if_close(R)
-        mult = np.array([
-            1.0 if lam == 0.0 else self.s(lam, ntrunc, ktrunc) for lam in lams
-        ])
-        A = np.dot(R, np.dot(np.diag(mult), la.inv(R)))
-        if dropnonreacting:
-            return A[:mech.getnumactive(), :]
+    def intgtd_radial_terms(self, a2, trunc, bratcutoff=None):
+        return cyl_intgtd_radial_terms(
+            a2, self.R, self.H, trunc, bratcutoff=bratcutoff
+        )
+
+    def intgtd_axial_terms(self, a2, trunc):
+        if self.zero_cache is None or len(self.zero_cache) < trunc:
+            self.zero_cache = jn_zeros(0, trunc)
+        return cyl_intgtd_axial_terms(
+            a2, self.R, self.H, trunc, zero_cache=self.zero_cache
+        )
+
+    def intgtd(self, a2, precision):
+        ntrunc, ktrunc = precision['ntrunc'], precision['ktrunc']
+        return sum(map(sum_standard, [
+            self.intgtd_radial_terms(a2, ntrunc),
+            self.intgtd_axial_terms(a2, ktrunc)
+        ]))
+
+class Prism(Shape):
+
+    def __init__(self, Lx, Ly, Lz, charlen=None):
+        if charlen is None:
+            charlen = 0.5 * Lx * Ly * Lz / (Lx * Ly + Lx * Lz + Ly * Lz)
+        self.Lx, self.Ly, self.Lz, self.charlen = Lx, Ly, Lz, charlen
+
+    @staticmethod
+    def split_prec(precision):
+        if 'trunc' in precision and not any([
+            k in precision.keys() for k in ['xtrunc', 'ytrunc', 'ztrunc']
+        ]):
+            return precision['trunc'], precision['trunc'], precision['trunc']
         else:
-            return A
+            return (precision[k] for k in ['xtrunc', 'ytrunc', 'ztrunc'])
+
+    def ptwise(self, a2, precision, x, y, z):
+        return psm_ptwise_series(
+            a2, self.Lx, self.Ly, self.Lz, self.split_prec(precision), x, y, z
+        )
+
+    def intgtd(self, a2, precision):
+        return psm_intgtd_series(
+            a2, self.Lx, self.Ly, self.Lz, *self.split_prec(precision)
+        )
+
 
