@@ -99,11 +99,11 @@ for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
             refsoln['rmesh'], refsoln['zmesh'], err,
             lvls, norm=colors.LogNorm()
         )
-        lax.set_title("Solution Comparison")
+        lax.set_title(r"~~DNS \quad\quad Series")
         rax.set_title("Relative Error")
         # these colorbars are the same for each set
         cbs = [plt.colorbar(cm, ax=ax) for ax, cm in zip([lax, rax], cms)]
-    for ax in multaxs[i, :]:
+    for ax in [*multaxs[i, :], *singaxs[i]]:
         ax.set_xlabel(r"\( r \)")
         ax.set_ylabel(r"\( z \)")
 multfig.tight_layout()
@@ -139,8 +139,10 @@ else:
     for ext in ['svg', 'pdf']:
         l2fig.savefig(imgpath("comparison_l2errs.{}".format(ext)))
         l2infig.savefig(imgpath("comparison_l2innererrs.{}".format(ext)))
+        l2sffig.savefig(imgpath("comparison_l2selferrs.{}".format(ext)))
         multfig.savefig(imgpath("comparison_cases.{}".format(ext)))
         for i, fig in enumerate(singfigs):
+            fig.tight_layout()
             fig.savefig(imgpath("comparison_case{}.{}".format(i+1, ext)))
 
 
