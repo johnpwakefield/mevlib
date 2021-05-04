@@ -80,7 +80,7 @@ class Mechanism(object):
 
     spcs = None             # list of species objects
     rxns = None             # list of reaction objects
-    numactive = None      # ignore products
+    numactive = None        # ignore products
 
     # providing an explicit constructor prevents the common error of
     # overwriting default values
@@ -119,18 +119,20 @@ class Mechanism(object):
                 print("All species are involved in at least one reaction.")
         return nonreacting
 
-    def findproducts(self, verb):
-        products = [
-            spc.symb for spc in self.spcs
-            if not any([spc.symb == rxn.src for rxn in self.rxns])
-        ]
-        self.spcs.sort(key=lambda spc: spc.symb in products)
-        self.numactive = len(self.spcs) - len(products)
-        if verb:
-            print((
-                "Found {} product species:\n\t{}"
-            ).format(len(products), ", ".join(products)))
-        return products
+# TODO this should be re-enabled after we deal with how sorting is going to
+# work
+#   def findproducts(self, verb):
+#       products = [
+#           spc.symb for spc in self.spcs
+#           if not any([spc.symb == rxn.src for rxn in self.rxns])
+#       ]
+#       self.spcs.sort(key=lambda spc: spc.symb in products)
+#       self.numactive = len(self.spcs) - len(products)
+#       if verb:
+#           print((
+#               "Found {} product species:\n\t{}"
+#           ).format(len(products), ", ".join(products)))
+#       return products
 
     def getnumactive(self):
         if self.numactive is None:
@@ -153,19 +155,23 @@ class Mechanism(object):
                     )
         return undef
 
-    def getmatrix(self, charlen, T):
+    def getmatrix(self, T):
         n = len(self.spcs)
         symbols = [spc.symb for spc in self.spcs]
         kijs, Dis = np.zeros((n, n)), np.empty((n,))
         for i, spcs in enumerate(self.spcs):
             Dis[i] = spcs.effective_diffusion(T)
         for rxn in self.rxns:
-            i, j = symbols.index(rxn.src), symbols.index(rxn.dst)
+            j, i = symbols.index(rxn.src), symbols.index(rxn.dst)
             kijs[i, j] = rxn.kij(T)
-        phiij2s = (
-            kijs * charlen**2 / np.tile(Dis.reshape((-1,1)), len(self.spcs))
-        )
+        # choose characteristic length scale to be the unit
+        # note the transpose below to fix index order
+        phiij2s = kijs / np.tile(Dis.reshape((-1,1)), len(self.spcs)).T
         B = np.diag(np.sum(phiij2s, axis=0)) - phiij2s
+#       TODO
+#       np.set_printoptions(formatter={'float': "{0:0.4e}".format})
+#       print(B)
+#       exit(2)
         return B
 
 

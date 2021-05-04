@@ -6,6 +6,7 @@ import pkgutil
 import argparse
 from tqdm import tqdm
 
+from mevlib.mechanisms import Mechanism
 from mevlib.diagonalization import computetransform
 from mevlib.parsing.auto import parse_dynamic
 
@@ -45,9 +46,10 @@ def main():
     # parse file
     if not os.path.isfile(args.fname):
         print("'{}' does not appear to be a file.".format(args.fname))
-    precision, shape, temperatures, mech = parse_dynamic(
+    precision, shape, temperatures, species, reactions = parse_dynamic(
         args.fname, args.verbose
     )
+    mech = Mechanism(species, reactions)
     if args.verbose:
         print("Successfully read species {} with reactions {}.".format(
             ", ".join(map(str, mech.spcs)), ", ".join(map(str, mech.rxns))

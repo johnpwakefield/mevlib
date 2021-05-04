@@ -22,11 +22,11 @@ nexact, kexact = 64, 32
 
 D = 5.4423
 cases = [
-    (240.0, 240.0, 60.0, 1.0),
-    (140.0, 840.0, 60.0, 1.0),
-    (180.0, 360.0, 60.0, 4.0),
-    (180.0, 360.0, 60.0, 0.1),
-    (180.0, 360.0, 60.0, 1.0)
+    (240.0, 240.0, 1.0),
+    (140.0, 840.0, 1.0),
+    (180.0, 360.0, 4.0),
+    (180.0, 360.0, 0.1),
+    (180.0, 360.0, 1.0)
 ]
 fns = [
     (
@@ -35,9 +35,9 @@ fns = [
     for i in range(5)
 ]
 rates = [1.5117e-3, 1.5117e-3, 6.0470e-3, 1.5117e-4, 1.5117e-3]
-compphi2s = [rate / D for (_, _, L, _), rate in zip(cases, rates)]
+compphi2s = [rate / D for rate in rates]
 cases = [
-    (Cylinder(case[0], case[1], case[2]), compphi2)
+    (Cylinder(case[0], case[1]), compphi2)
     for case, compphi2 in zip(cases, compphi2s)
 ]
 Ns = np.arange(1, 42, 4)
