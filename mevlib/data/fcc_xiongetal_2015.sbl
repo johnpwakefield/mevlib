@@ -41,23 +41,22 @@ TYPE ARRCOEFFS  # for A, b, Ea, T0 in A T^b e^(-Ea / R (1/T - 1/T0))
 PREFACTOR SPECIFIED     # this is the default
 EXPONENT OMITTED        # this is the default, equivalent to 0
 ACTENERGY SPECIFIED     # this is the default
-REFTEMP 773             # the default is to ommit the term
                         # the gas constant may not be specified
 
 TABLE
-#   reaction    A       Ea
-    S -> D      0.000008702361111111111   47.6
-    S -> G      0.000014462416666666666   43.4
-    S -> LPG    0.0000018223333333333331  38.5
-    S -> DR     0.000000048777777777777774 30.2
-    S -> CK     0.00000015955555555555556 30.0
-    D -> G      0.000004078805555555555   54.1
-    D -> LPG    0.000011150111111111112   62.9
-    D -> DR     0.000005168               66.7
-    D -> CK     0.00001285886111111111    65.0
-    G -> LPG    0.00013724122222222223    80.5
-    G -> DR     0.00006810966666666667    85.2
-    G -> CK     0.00006720330555555556    77.3
+#   reaction    A                   Ea
+    S -> D      8.702361111111111   47.6
+    S -> G      14.462416666666666  43.4
+    S -> LPG    1.8223333333333331  38.5
+    S -> DR     0.0487777777777777  30.2
+    S -> CK     0.1595555555555555  30.0
+    D -> G      4.078805555555555   54.1
+    D -> LPG    11.150111111111112  62.9
+    D -> DR     5.168               66.7
+    D -> CK     12.85886111111111   65.0
+    G -> LPG    137.24122222222223  80.5
+    G -> DR     68.10966666666667   85.2
+    G -> CK     67.20330555555556   77.3
 END
 
 END
