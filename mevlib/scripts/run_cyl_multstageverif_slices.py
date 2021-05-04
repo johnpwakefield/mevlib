@@ -38,7 +38,7 @@ cases = [(Cylinder(*dims), T, np.array(bdry)) for dims, T, bdry in cases]
 
 
 # parse test mechanism
-mechconf = pkgutil.get_data('mevlib', 'data/verificationcases_mechanism_2.sbl')
+mechconf = pkgutil.get_data('mevlib', 'data/fcc_xiongetal_2015.sbl')
 precision, shape, temperatures, species, reactions = parse_attempt(
     StringIO(mechconf.decode('utf-8')), '.sbl', True, True
 )
