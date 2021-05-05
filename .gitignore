@@ -12,6 +12,9 @@ old*
 # mevlookup files are generated outputs
 mevlookup.f03
 
+# build directories
+build_*
+
 # virtual environment directories
 MEVLIB.egg-info
 virtualenv
