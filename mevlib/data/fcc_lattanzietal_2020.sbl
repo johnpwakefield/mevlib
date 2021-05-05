@@ -4,7 +4,7 @@ DIFFUSION
 
 TYPE KNUDSEN        # other types to be added; this is the default
 
-POREDIAMETER    2.0
+POREDIAMETER    2000000.0   #TODO this is a hack; find the unit error
 VOIDAGE         0.319
 TORTUOSITY      7.0
 

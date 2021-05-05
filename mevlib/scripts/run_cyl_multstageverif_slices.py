@@ -27,7 +27,7 @@ D = 5.4423
 cases = [
 #   ((180.0, 360.0), 600.0, (0.9, 0.8, 0.7, 0.6, 0.2, 0.2)),
 #   ((180.0, 360.0), 800.0, (0.9, 0.8, 0.7, 0.6, 0.2, 0.2)),
-    ((180.0, 360.0), 600.0, (0.3, 0.4, 0.5, 0.6, 0.4, 0.3))
+    ((180.0, 360.0), 773.0, (0.3, 0.4, 0.5, 0.6, 0.4, 0.3))
 ]
 drs = ["H", "rad"]
 components = ['S', 'D', 'Gas', 'LPG', 'DR']
@@ -38,7 +38,7 @@ cases = [(Cylinder(*dims), T, np.array(bdry)) for dims, T, bdry in cases]
 
 
 # parse test mechanism
-mechconf = pkgutil.get_data('mevlib', 'data/fcc_xiongetal_2015.sbl')
+mechconf = pkgutil.get_data('mevlib', 'data/fcc_lattanzietal_2020.sbl')
 precision, shape, temperatures, species, reactions = parse_attempt(
     StringIO(mechconf.decode('utf-8')), '.sbl', True, True
 )
@@ -82,12 +82,20 @@ for i, (shape, temp, bdry) in enumerate(cases):
                 1e6 * np.array(ref['x']), [y[j] for y in our], 'g+',
                 label="Our Solution"
             )
+            if dr == "H":
+                axs[i][j,k].set_xlabel(r"\( z \)")
+            else:
+                axs[i][j,k].set_xlabel(r"\( r \)")
+            axs[i][j,k].grid()
             refrange = max(ref['y']) - min(ref['x'])
             if False:
                 axs[i][j,k].set_ylim((
                     min(ref['y']) - 0.1 * refrange,
                     max(ref['y']) + 0.1 * refrange
                 ))
+axs[-1][-1,-1].legend()
+for fig in figs:
+    fig.tight_layout()
 
 
 if showfigs():
