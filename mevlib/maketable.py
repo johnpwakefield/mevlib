@@ -1,20 +1,28 @@
 
 
-import pkgutil
 from tqdm import tqdm
 
 from mevlib.diagonalization import computetransform
 from mevlib.parsing.auto import parse_dynamic
 
-
-# main
-
-
-#TODO add other output langauge targets and further separate that from this (a
-# MVC paradigm seems appropriate here, with the controller located in main.py).
+from mevlib.outformats.fortran import f03, f90
+#TODO add mat and mex
+#from mevlib.outformats.matlab import mat, mex
 
 
-def make_table(infile, outfile, verb=True, keepnonreacting=True):
+outfmts = {
+    'f03': f03,
+    'f90': f90,
+#   'mat': mat,
+#   'mex': mex
+}
+
+
+class OutputFormatError(Exception):
+    pass
+
+
+def compute_matrices(infile, keep_products, verb=True):
 
     # parse file
     precision, shape, temperatures, mech = parse_dynamic(
@@ -41,7 +49,7 @@ def make_table(infile, outfile, verb=True, keepnonreacting=True):
     # make data table
     if verb:
         print("Computing...")
-        if keepnonreacting:
+        if keep_products:
             print("Nonreacting species will be kept.")
         else:
             print("Nonreacting species will be dropped.")
@@ -53,70 +61,30 @@ def make_table(infile, outfile, verb=True, keepnonreacting=True):
     matrices = [
         computetransform(
             shape, mech, T, precision,
-            dropnonreacting=(not keepnonreacting)
+            dropnonreacting=(not keep_products)
         )
         for T in (tqdm(temperatures) if verb else temperatures)
     ]
 
-    setd  = r"this%d  = {}".format(matrices[0].shape[1])
-    setad = r"this%ad = {}".format(matrices[0].shape[0])
-    allav = r"allocate(this%axisvals({}))".format(len(temperatures))
-    alldv = r"allocate(this%datavals(this%ad, this%d, {}))".format(
-        len(temperatures)
-    )
-    setav = r"this%axisvals = (/ {} /)".format(
-        ", ".join(map(str, temperatures))
-    )
-    setdvs = [
-        r"this%datavals(:, :, {}) = reshape((/ {} /), (/ {} /))".format(
-            i + 1,
-            ", ".join(map(str, matrices[i].flatten('F'))),
-            ", ".join(map(str, matrices[i].shape))
+    return matrices, temperatures
+
+
+def make_table(src, dst, ext, keep_products, verb=True):
+    if ext is None and len(dst.name.split('.')) > 1:
+        ext = dst.name.split('.')[-1]
+    if ext is None:
+        print(
+            "Could not infer output format; this is typically a result of"
+            "specifying an output file without a file extension (e.g. stdout)"
+            "and not specifying a format.  Try the previous command with the"
+            "additional option `--fmt <format>' where <format> is one of: "
+            + ", ".join(outfmts.keys())
         )
-        for i in range(len(temperatures))
-    ]
-
-    def combinelines(limit, prespaces, lines):
-        def splitline(line):
-            inwords = line.split()
-            outwords = []
-            while len(inwords):
-                nl = []
-                for w in inwords:
-                    if limit - prespaces - 2 - len(" ".join(nl)) - len(w) > 0:
-                        nl.append(w)
-                    else:
-                        break
-                if not len(nl):
-                    print(
-                        "Cannot break into lines; either lines are too short "
-                        "or words are too big."
-                    )
-                    raise Exception("Cannot break lines.")
-                outwords.append(nl)
-                inwords = inwords[len(nl):]
-            return [
-                (" ".join(nl), i + 1 == len(outwords))
-                for i, nl in enumerate(outwords)
-            ]
-        return "\n".join([
-            prespaces * " " + nl + (" &" if not last else "")
-            for ol in lines for nl, last in splitline(ol)
-        ])
-
-    initlines = combinelines(
-        79, 8, [setd, setad, allav, alldv, setav] + setdvs
-    )
-
-    try:
-        tpl = pkgutil.get_data('mevlib', '/templates/mevlookup_template.f03')
-        if tpl is None:
-            raise FileNotFoundError("template not found")
-        program = tpl.decode().replace('!inline_init_here!', initlines)
-    except FileNotFoundError:
-        print("Could not find template file.")
-        exit(1)
-
-    outfile.write(program)
+        raise OutputFormatError("Output format not specified.")
+    if ext in outfmts.keys():
+        writer = outfmts[ext]
+    else:
+        raise OutputFormatError("Unknown output format '{}'.".format(ext))
+    writer(dst, *compute_matrices(src, verb, keep_products), verb)
 
 

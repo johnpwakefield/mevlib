@@ -77,22 +77,3 @@ contains
 end module mevlookup
 
 
-program testmevlookup
-
-    use mevlookup
-
-    type(MEVData) :: tbl
-    double precision, dimension(6) :: conc
-    double precision :: temp
-    double precision, dimension(3) :: mev
-
-    call tbl%initialize()
-    conc = (/ 1.0, 0.8, 0.6, 0.5, 0.2, 0.2 /)
-    temp = 735.0
-    mev = tbl%getmev(conc, temp)
-    write(*, *) mev
-    call tbl%destroy()
-
-end program testmevlookup
-
-
