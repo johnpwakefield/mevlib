@@ -19,14 +19,14 @@ Getting Started
 There are five steps required to integrate <libname> into your existing code:
 
  1. Generate a data file containing precomputed values throughout the
-    temperature range using `maketable.py`.
+    temperature range using `mevtable <infile> <outfile>`.
 
- 2. Compile `efactors.f90` through your own build process (or build
-    `efactors.mod` using the included makefile).
+ 2. Compile `mevlookup.f90` through your own build process (or build
+    `mevlookup.mod` using the included makefile).
 
  3. Initialize the `efactors` object.  (Because object orientation in FORTRAN
     is patchy, the constructor `efactors%build` will need to be evoked
-    explicitly.
+    explicitly.)
 
  4. Call `efactors%getmev` to obtain a multistage effectiveness vector at the
     local temperature and free stream concentration.
@@ -91,7 +91,7 @@ TODO
   - scripts should have a function as an entry point
   - many scripts should maybe be "examples"
   - the scripts.py file referenced by scripts is kinda wonky
-  - add copyright notice from gpl to command line usage
+  - move unit tests out of package directory and use unittests module for these
 
 
 

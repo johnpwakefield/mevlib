@@ -9,6 +9,11 @@ from mevlib.parsing.auto import parse_dynamic
 
 # main
 
+
+#TODO add other output langauge targets and further separate that from this (a
+# MVC paradigm seems appropriate here, with the controller located in main.py).
+
+
 def make_table(infile, outfile, verb=True, keepnonreacting=True):
 
     # parse file

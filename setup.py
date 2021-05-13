@@ -17,7 +17,7 @@ Effectiveness Vector (MEV) for use in CFD-DEM models for chemical reactions
     packages=["mevlib"],
     entry_points='''
     [console_scripts]
-    mevlib=mevlib.scripts.main:main
+    mevtable=mevlib.scripts.main:maketable
     '''
 )
 
