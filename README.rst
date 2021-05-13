@@ -91,6 +91,7 @@ TODO
   - scripts should have a function as an entry point
   - many scripts should maybe be "examples"
   - the scripts.py file referenced by scripts is kinda wonky
+  - add copyright notice from gpl to command line usage
 
 
 
