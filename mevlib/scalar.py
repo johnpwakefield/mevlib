@@ -36,29 +36,24 @@ def cyl_ln(a2, R, alphak):
     return np.sqrt(a2 + (alphak / R)**2)
 
 def cyl_ptwise_radial_terms(a2, R, H, trunc, r, z):
-    terms = np.empty((trunc,))
-    for n in range(trunc-1, -1, -1):
-        gn = cyl_gn(a2, H, n)
-        terms[n] = (
-            4.0 / (np.pi * (2 * n + 1))
-            * np.sin(np.pi * (2 * n + 1) * z / H)
-            * np.exp(gn * (r - R)) * i0e(gn * r) / i0e(gn * R)
-        )
-    return terms
+    ns = np.arange(trunc-1, -1, -1)
+    gns = cyl_gn(a2, H, ns)
+    return (
+        4.0 / (np.pi * (2 * ns + 1))
+        * np.sin(np.pi * (2 * ns + 1) * z / H)
+        * np.exp(gns * (r - R)) * i0e(gns * r) / i0e(gns * R)
+    )
 
 def cyl_ptwise_axial_terms(a2, R, H, trunc, r, z, zero_cache=None):
     if zero_cache is not None and len(zero_cache) >= trunc:
         alpha = zero_cache
     else:
         alpha = jn_zeros(0, trunc)
-    terms = np.empty((trunc,))
-    for k in range(trunc, 0, -1):
-        lk = cyl_ln(a2, R, alpha[k-1])
-        terms[k-1] = (
-            2.0 * np.cosh(lk * (z - H / 2)) / np.cosh(lk * H / 2)
-            * j0(alpha[k-1] / R * r) / (j1(alpha[k-1]) * alpha[k-1])
-        )
-    return terms
+    lks = cyl_ln(a2, R, alpha[::-1])
+    return (
+        2.0 * np.cosh(lks * (z - H / 2)) / np.cosh(lks * H / 2)
+        * j0(alpha[::-1] / R * r) / (j1(alpha[::-1]) * alpha[::-1])
+    )
 
 def cyl_ptwise_radial(a2, R, H, ntrunc, r, z):
     return sum_standard(cyl_ptwise_radial_terms(a2, R, H, ntrunc, r, z))
