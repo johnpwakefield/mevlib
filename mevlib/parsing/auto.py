@@ -36,7 +36,11 @@ def parse_attempt(f, ext, verb):
         return None
 
 def parse_dynamic(f, verb):
-    ext = f[:-4] if f[:-4] in file_types.keys() else None
+    if len(f.name.split('.')):
+        rawext = f.name.split('.')[-1]
+        ext = rawext if rawext in file_types.keys() else None
+    else:
+        ext = None
     if ext is not None:
         if verb:
             print("Inferring file type from file extension.")

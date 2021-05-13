@@ -13,7 +13,7 @@ class SBLParsingException(Exception):
     pass
 
 
-def parse_sensible(fn, verb=False):
+def parse_sensible(f, verb=False):
 
     # building blocks
     def keylist(ls):
@@ -85,11 +85,10 @@ def parse_sensible(fn, verb=False):
         | pp_diff_blk | pp_spec_blk | pp_reac_blk
     ).ignore(pp_comment)
 
-    with open(fn, "r") as f:
-        d = {
-            h: {k.lower(): v for k, v in u}
-            for h, u in parser.parseFile(f).asList()
-        }
+    d = {
+        h: {k.lower(): v for k, v in u}
+        for h, u in parser.parseFile(f).asList()
+    }
 
     # make sure we have the key sections
     req_sections = [

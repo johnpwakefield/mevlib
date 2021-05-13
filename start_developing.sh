@@ -18,6 +18,7 @@ source ./virtualenv/bin/activate
 pip3 install wheel      # not doing this first can cause pip errors
 pip3 install -r requirements.txt
 python3 setup.py develop
+eval "$(_MEVLIB_COMPLETE=bash_source mevlib)"
 
 
 echo "You are now ready to develop the package and/or run scripts in this    "

@@ -1,8 +1,7 @@
 
 
-import os
 import pkgutil
-import tqdm
+from tqdm import tqdm
 
 from mevlib.diagonalization import computetransform
 from mevlib.parsing.auto import parse_dynamic
@@ -10,13 +9,11 @@ from mevlib.parsing.auto import parse_dynamic
 
 # main
 
-def make_table(fn, outfile, verb=True, keepnonreacting=True):
+def make_table(infile, outfile, verb=True, keepnonreacting=True):
 
     # parse file
-    if not os.path.isfile(fn):
-        print("'{}' does not appear to be a file.".format(fn))
     precision, shape, temperatures, mech = parse_dynamic(
-        fn, verb
+        infile, verb
     )
     if verb:
         print("Successfully read species {} with reactions {}.".format(
@@ -115,13 +112,6 @@ def make_table(fn, outfile, verb=True, keepnonreacting=True):
         print("Could not find template file.")
         exit(1)
 
-    if len(outfile) < 5 and verb:
-        print("Warning: output file name '{}' is very short.".format(outfile))
-    elif outfile[-4:] != ".f03" and verb:
-        print("Warning: output file does not have suggested extension '.f03'.")
-    if verb:
-        print("Writing output file '{}'.".format(outfile))
-    with open(outfile, 'w') as f:
-        f.write(program)
+    outfile.write(program)
 
 
