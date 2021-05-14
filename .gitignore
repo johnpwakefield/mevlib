@@ -18,9 +18,6 @@ mevlookup.f90
 *.o
 *.so
 
-# build directories
-build_*
-
 # virtual environment directories
 MEVLIB.egg-info
 virtualenv
