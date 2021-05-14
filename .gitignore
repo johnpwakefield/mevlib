@@ -11,6 +11,12 @@ old*
 
 # mevlookup files are generated outputs
 mevlookup.f03
+mevlookup.f90
+
+# compiled files
+*.mod
+*.o
+*.so
 
 # build directories
 build_*
