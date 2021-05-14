@@ -36,8 +36,8 @@ def parse_attempt(f, ext, verb):
         return None
 
 def parse_dynamic(f, verb):
-    if len(f.name.split('.')):
-        rawext = f.name.split('.')[-1]
+    if len(f.split('.')):
+        rawext = f.split('.')[-1]
         ext = rawext if rawext in file_types.keys() else None
     else:
         ext = None

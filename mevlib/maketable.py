@@ -7,14 +7,16 @@ from mevlib.parsing.auto import parse_dynamic
 
 from mevlib.outformats.fortran import f03, f90
 #TODO add mat and mex
-#from mevlib.outformats.matlab import mat, mex
+from mevlib.outformats.matlab import mat
+from mevlib.outformats.python import pickle
 
 
 outfmts = {
     'f03': f03,
     'f90': f90,
-#   'mat': mat,
-#   'mex': mex
+    'mat': mat,
+#   'mex': mex,
+    'pickle': pickle
 }
 
 
@@ -70,8 +72,8 @@ def compute_matrices(infile, keep_products, verb=True):
 
 
 def make_table(src, dst, ext, keep_products, verb=True):
-    if ext is None and len(dst.name.split('.')) > 1:
-        ext = dst.name.split('.')[-1]
+    if ext is None and len(dst.split('.')) > 1:
+        ext = dst.split('.')[-1]
     if ext is None:
         print(
             "Could not infer output format; this is typically a result of"

@@ -3,13 +3,6 @@
 import pkgutil
 
 
-
-
-#TODO add other output langauge targets and further separate that from this (a
-# MVC paradigm seems appropriate here, with the controller located in main.py).
-
-
-
 def combinelines(limit, prespaces, lines):
     def splitline(line):
         inwords = line.split()
@@ -72,7 +65,8 @@ def f03(outfile, matrices, temperatures, verb=False):
         print("Could not find template file.")
         exit(1)
 
-    outfile.write(program)
+    with open(outfile, 'w') as f:
+        f.write(program)
 
 
 def f90(outfile, matrices, temperatures, verb=False):
@@ -104,6 +98,7 @@ def f90(outfile, matrices, temperatures, verb=False):
         print("Could not find template file.")
         exit(1)
 
-    outfile.write(program)
+    with open(outfile, 'w') as f:
+        f.write(program)
 
 
