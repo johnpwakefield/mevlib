@@ -18,8 +18,10 @@ old*
 mevlookup.f03
 mevlookup.f90
 
-# build directories
-build_*
+# compiled files
+*.mod
+*.o
+*.so
 
 # virtual environment directories
 MEVLIB.egg-info
