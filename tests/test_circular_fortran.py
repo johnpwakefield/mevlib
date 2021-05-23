@@ -42,7 +42,6 @@ interlib = np.array([
     np.dot(mat, conc[:,j]) for mat in intermats for j in range(conc.shape[1])
 ]).T
 
-
 pointerr = max(np.linalg.norm(pointtbl - pointlib, axis=0))
 intererr = max(np.linalg.norm(intertbl - interlib, axis=0))
 
