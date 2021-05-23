@@ -71,13 +71,17 @@ def f03(outfile, matrices, temperatures, verb=False):
 
 def f90(outfile, matrices, temperatures, verb=False):
 
-    setd  = r"d  = {}".format(matrices[0].shape[1])
-    setad = r"ad = {}".format(matrices[0].shape[0])
-    allav = r"allocate(axisvals({}))".format(len(temperatures))
-    alldv = r"allocate(datavals(ad, d, {}))".format(len(temperatures))
-    setav = r"axisvals = (/ {} /)".format(", ".join(map(str, temperatures)))
+    setd  = r"this%d  = {}".format(matrices[0].shape[1])
+    setad = r"this%ad = {}".format(matrices[0].shape[0])
+    allav = r"allocate(this%axisvals({}))".format(len(temperatures))
+    alldv = r"allocate(this%datavals(this%ad, this%d, {}))".format(
+        len(temperatures)
+    )
+    setav = r"this%axisvals = (/ {} /)".format(
+        ", ".join(map(str, temperatures))
+    )
     setdvs = [
-        r"datavals(:, :, {}) = reshape((/ {} /), (/ {} /))".format(
+        r"this%datavals(:, :, {}) = reshape((/ {} /), (/ {} /))".format(
             i + 1,
             ", ".join(map(str, matrices[i].flatten('F'))),
             ", ".join(map(str, matrices[i].shape))
@@ -90,7 +94,7 @@ def f90(outfile, matrices, temperatures, verb=False):
     )
 
     try:
-        tpl = pkgutil.get_data('mevlib', '/templates/mevlookup_template.f03')
+        tpl = pkgutil.get_data('mevlib', '/templates/mevlookup_template.f90')
         if tpl is None:
             raise FileNotFoundError("template not found")
         program = tpl.decode().replace('!inline_init_here!', initlines)

@@ -5,26 +5,32 @@ module mevlookup
 
     public
 
-    integer :: d, ad        ! dimension, active dimension
-    double precision, dimension(:), allocatable :: axisvals
-    double precision, dimension(:,:,:), allocatable :: datavals
+    type :: MEVData
+        integer :: d, ad        ! dimension, active dimension
+        double precision, dimension(:), allocatable :: axisvals
+        double precision, dimension(:,:,:), allocatable :: datavals
+    end type
 
 contains
 
-    pure function mevdata_getmev(conc, temp) result(mev)
-        double precision, dimension(d), intent(in) :: conc
+    pure function mevdata_getmev(this, conc, temp) result(mev)
+        class(MEVData), intent(in) :: this
+        double precision, dimension(this%d), intent(in) :: conc
         double precision, intent(in) :: temp
-        double precision, dimension(ad) :: mev
+        double precision, dimension(this%ad) :: mev
         integer :: il
         double precision :: w
 
-        il = bisect(axisvals, temp)
+        il = bisect(this%axisvals, temp)
         ! TODO deal with -1 sentinel value
-        w = (temp - axisvals(il)) / (axisvals(il+1) - axisvals(il))
+        w = (                                                       &
+            (temp - this%axisvals(il))                              &
+            / (this%axisvals(il+1) - this%axisvals(il))             &
+        )
 
         mev = (                                                     &
-            (1.0 - w) * matmul(datavals(:, :, il), conc)            &
-            + w * matmul(datavals(:, :, il + 1), conc)              &
+            (1.0 - w) * matmul(this%datavals(:, :, il), conc)       &
+            + w * matmul(this%datavals(:, :, il + 1), conc)         &
         )
 
     end function mevdata_getmev
@@ -53,13 +59,15 @@ contains
         end do
     end function bisect
 
-    subroutine mevdata_init()
+    subroutine mevdata_init(this)
+        class(MEVData), intent(inout) :: this
         !inline_init_here!
     end subroutine mevdata_init
 
-    subroutine mevdata_destroy()
-        deallocate(axisvals)
-        deallocate(datavals)
+    subroutine mevdata_destroy(this)
+        class(MEVData), intent(inout) :: this
+        deallocate(this%axisvals)
+        deallocate(this%datavals)
     end subroutine mevdata_destroy
 
 end module mevlookup

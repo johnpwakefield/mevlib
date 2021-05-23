@@ -55,7 +55,6 @@ TABLE
     LPG "Liquid Petroleum Gas"  52.0
     DR  "Dry Gas"               16.0
     CK  "Coke"                  400.0
-    IN  "Inert Species"         42.0
 END
 
 END
