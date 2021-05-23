@@ -6,11 +6,17 @@ img*
 # python caches
 __pycache__
 
+# compiled fortran
+*.o
+*.mod
+*.so
+
 # old files (this is temporary during the transition period)
 old*
 
 # mevlookup files are generated outputs
 mevlookup.f03
+mevlookup.f90
 
 # build directories
 build_*
