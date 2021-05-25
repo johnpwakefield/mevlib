@@ -6,16 +6,16 @@ from mevlib.maketable import compute_matrices
 from getvals import getvals
 
 
+fname = "../examples/example_file.sbl"
+
 conc = np.array([
     [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
     [0.0, 0.1, 0.3, 0.4, 0.2, 0.0]
 ]).T
 
 
+pointmats, pointtemps = compute_matrices(fname, True, False)
 
-
-with open("../examples/example_file.sbl") as f:
-    pointmats, pointtemps = compute_matrices(f, True, False)
 
 w = 0.666
 intertemps = [
