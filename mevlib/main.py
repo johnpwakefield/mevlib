@@ -23,3 +23,11 @@ def maketable(src, dst, fmt=None, discard_products=False):
     make_table(src, dst, fmt, not discard_products, True)
 
 
+@click.command()
+def otherexec():
+    click.echo("""
+The main executable for this module is `mevtable'.
+    """)
+    return 1
+
+
