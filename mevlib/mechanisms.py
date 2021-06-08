@@ -69,6 +69,7 @@ class ArrheniusReaction(Reaction):
     def kij(self, T):
         A = self.A
         if self.b is not None and self.b != 0.0:
+            #TODO we need to be more carful about this; this only works if A is primitive
             A *= T**self.b
         if self.T0 is None or self.T0 == inf or self.T0 == -inf:
             T0inv = 0.0
@@ -166,12 +167,11 @@ class Mechanism(object):
             kijs[i, j] = rxn.kij(T)
         # choose characteristic length scale to be the unit
         # note the transpose below to fix index order
-        phiij2s = kijs / np.tile(Dis.reshape((-1,1)), len(self.spcs)).T
+        phiij2s = kijs / np.tile(Dis.reshape((-1,1)), len(self.spcs))
         B = np.diag(np.sum(phiij2s, axis=0)) - phiij2s
-#       TODO
+#       TODO (what was supposed to be done here?)
 #       np.set_printoptions(formatter={'float': "{0:0.4e}".format})
 #       print(B)
-#       exit(2)
         return B
 
 
