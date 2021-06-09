@@ -26,7 +26,7 @@ cases = [
 #   ((180.0, 360.0), 800.0, (0.9, 0.8, 0.7, 0.6, 0.2, 0.2)),
 #   ((180.0, 360.0), 773.0, (0.3, 0.4, 0.5, 0.6, 0.4, 0.3))
     # this next line is guessed
-    ((180.0, 360.0), 773.0, (12.0, 16.0, 20.0, 24.0, 16.0, 0.0))
+    ((180.0, 360.0), 600.0, (12.0, 16.0, 20.0, 24.0, 16.0, 0.0))
 ]
 drs = ["H", "rad"]
 components = ['S', 'D', 'Gas', 'LPG', 'DR']
@@ -55,30 +55,16 @@ figs, axs = zip(*[
 for i, (shape, temp, bdry) in enumerate(cases):
     # compute phi2
     # note this is for fcc_lattanzietal_2020 specifically
-    T0 = 773.15
-    R = 8.31446261815324e-3  # kJ per mol Kelvin
-    k0s = np.array([1.413, 4.337, 1.163, 0.114, 0.386])
-    As = np.array([154.55, 256.85, 32.365, 0.86629, 2.8337])
-    Eas = np.array([47.6, 43.4, 38.5, 30.2, 30.0])
-    kijs_1 = k0s * np.exp(- Eas / R * (temp**(-1) - T0**(-1)))
-    kijs_2 = As * np.exp(- Eas / R * temp**(-1))
-    print(R / Eas / (np.log(k0s) - np.log(As)))
-    print(As * np.exp(Eas / R / T0))
-    print(kijs_1)
-    print(kijs_2)
-    Dis = np.array([spc.effective_diffusion(temp) for spc in species[1:]])
-    print(Dis[0])
-    phi2 = sum([kij / Dis[0] for kij in kijs_1])
+    skijs = 0.069537
+    Di = 5.138e-9
+    phi2 = skijs / Di
     # compare this phi2 to the one provided by diagonalization class
     _, lams, _, _ = diag_ptwise_setup(shape, mech, temp, precision)
-    print("manual phi2 is {}, lib computed phi2 is {}".format(phi2, max(lams)))
-    print("other manual phi2 is {}".format(
-        sum([kij / Dis[0] for kij in kijs_2])
-    ))
     # TODO fix this
-    phi2 *= 1e-6
+    print(phi2)
+    phi2 *= 1e-12
     #TODO -------- trial and error
-    phi2 = 4.5e-6
+    #phi2 = 4.5e-6
     # ------------
     # plot comparison
     for k, dr in enumerate(drs):
