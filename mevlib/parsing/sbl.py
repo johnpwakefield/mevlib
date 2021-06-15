@@ -6,15 +6,14 @@ from math import floor
 import pyparsing as pp
 
 from mevlib.shapes import Cylinder
-from mevlib.mechanisms import Mechanism, KnudsenSpecies, ArrheniusReaction
+from mevlib.mechanisms import KnudsenSpecies, ArrheniusReaction
 
 
 class SBLParsingException(Exception):
     pass
 
 
-def parse_sensible(f, verb=False):
-
+def parse_sensible(f, verb=False, allow_partial=True):
     # building blocks
     def keylist(ls):
         return reduce(lambda x, y: x | y, map(pp.CaselessKeyword, ls))
@@ -85,158 +84,194 @@ def parse_sensible(f, verb=False):
         | pp_diff_blk | pp_spec_blk | pp_reac_blk
     ).ignore(pp_comment)
 
+    # actually parse the file
     d = {
         h: {k.lower(): v for k, v in u}
         for h, u in parser.parseFile(f).asList()
     }
 
     # make sure we have the key sections
-    req_sections = [
-        'diffusion', 'species', 'reactions',
-        'precision', 'shape', 'temperature'
-    ]
-    for sec in req_sections:
-        if sec not in d.keys():
-            raise SBLParsingException(
-                "Could not parse required section '{}'.".format(sec)
-            )
+    if not allow_partial:
+        for sec in req_sections:
+            if sec not in d.keys():
+                raise SBLParsingException(
+                    "Could not parse required section '{}'.".format(sec)
+                )
 
     # read series truncation or error tolerance
-    precision = d['precision']
-    if 'type' not in d['precision']:
-        print("Precision type not specified.")
-        raise SBLParsingException("Precision type not specified.")
-    if d['precision']['type'] == 'trunc':
-        if not ('ntrunc' in d['precision'] and 'ktrunc' in d['precision']):
-            if 'trunc' in d['precision']:
-                if verb:
-                    print("Single truncation given, using this for both sums.")
-                precision['ntrunc'] = d['precision']['trunc']
-                precision['ktrunc'] = d['precision']['trunc']
-            else:
-                print("Missing truncation information.")
-                raise SBLParsingException("Missing truncation information.")
-    elif d['precision']['type'] == 'tol':
-        raise NotImplementedError("Convergence tolerance not implemented yet.")
+    if 'precision' in d:
+        if allow_partial and verb:
+            print("Found section '{}'.".format('precision'))
+        precision = d['precision']
+        if 'type' not in d['precision']:
+            print("Precision type not specified.")
+            raise SBLParsingException("Precision type not specified.")
+        if d['precision']['type'] == 'trunc':
+            if not ('ntrunc' in d['precision'] and 'ktrunc' in d['precision']):
+                if 'trunc' in d['precision']:
+                    if verb:
+                        print(
+                            "Single truncation given, using this for both"
+                            "sums."
+                        )
+                    precision['ntrunc'] = d['precision']['trunc']
+                    precision['ktrunc'] = d['precision']['trunc']
+                else:
+                    print("Missing truncation information.")
+                    raise SBLParsingException(
+                        "Missing truncation information."
+                    )
+        elif d['precision']['type'] == 'tol':
+            raise NotImplementedError(
+                "Convergence tolerance not implemented yet."
+            )
+    else:
+        precision = None
 
     # read shape
-    if 'type' not in d['shape']:
-        print("Shape not specified.")
-        raise SBLParsingException("Shape not specified.")
-    if d['shape']['type'] == "cylinder":
-        if 'radius' not in d['shape'] and 'diameter' not in d['shape']:
-            print("Radius missing from shape dimensions.")
-            raise SBLParsingException("Missing shape dimensions.")
-        if 'radius' in d['shape'] and 'diameter' in d['shape']:
-            print("Radius and diameter cannot both be specified.")
-            raise SBLParsingException("Shape dimensions overspecified.")
-        if 'height' not in d['shape']:
-            print("Height missing from shape dimensions.")
-            raise SBLParsingException("Missing shape dimensions.")
-        if 'radius' in d['shape']:
-            shape = Cylinder(d['shape']['radius'], d['shape']['height'])
+    if 'shape' in d:
+        if allow_partial and verb:
+            print("Found section '{}'.".format('shape'))
+        if 'type' not in d['shape']:
+            print("Shape type not specified.")
+            raise SBLParsingException("Shape type not specified.")
+        if d['shape']['type'] == "cylinder":
+            if 'radius' not in d['shape'] and 'diameter' not in d['shape']:
+                print("Radius missing from shape dimensions.")
+                raise SBLParsingException("Missing shape dimensions.")
+            if 'radius' in d['shape'] and 'diameter' in d['shape']:
+                print("Radius and diameter cannot both be specified.")
+                raise SBLParsingException("Shape dimensions overspecified.")
+            if 'height' not in d['shape']:
+                print("Height missing from shape dimensions.")
+                raise SBLParsingException("Missing shape dimensions.")
+            if 'radius' in d['shape']:
+                shape = Cylinder(d['shape']['radius'], d['shape']['height'])
+            else:
+                shape = Cylinder(
+                    d['shape']['diameter'] / 2, d['shape']['height']
+                )
+        elif d['shape']['type'] == "box":
+            raise NotImplementedError("Shape 'box' not implemented.")
+        elif d['shape']['type'] == "sphere":
+            raise NotImplementedError("Shape 'sphere' not implemented.")
         else:
-            shape = Cylinder(d['shape']['diameter'] / 2, d['shape']['height'])
-    elif d['shape']['type'] == "box":
-        raise NotImplementedError("Shape 'box' not implemented.")
-    elif d['shape']['type'] == "sphere":
-        raise NotImplementedError("Shape 'sphere' not implemented.")
+            print("Shape '{}' not recognized.".format(d['shape']['type']))
+            raise SBLParsingException(
+                "Shape '{}' not recognized.".format(d['shape']['type'])
+            )
     else:
-        print("Shape '{}' not recognized.".format(d['shape']['type']))
-        raise SBLParsingException(
-            "Shape '{}' not recognized.".format(d['shape']['type'])
-        )
+        shape = None
 
     # read temperature ranges
-    if 'type' not in d['temperature']:
-        print("Type of temperature specification not present.")
-        raise SBLParsingException("Missing type for temperature range.")
-    if d['temperature']['type'] == "uniform":
-        if 'start' not in d['temperature'] or 'stop' not in d['temperature']:
-            print("Start and stop of temperature range must be given.")
-            raise SBLParsingException("Range parameters unspecified.")
-        if 'num' not in d['temperature'] and 'step' not in d['temperature']:
-            print("Either number of points or spacing must be specified.")
-            raise SBLParsingException("Range parameters unspecified.")
-        if 'num' in d['temperature'] and 'step' in d['temperature']:
-            print("Only one of 'num' or 'step' may be specified.")
-            raise SBLParsingException("Range parameters overspecified.")
-        l = d['temperature']['stop'] - d['temperature']['start']
-        if 'num' in d['temperature']:
-            num = d['temperature']['num']
+    if 'temperature' in d:
+        if allow_partial and verb:
+            print("Found section '{}'.".format('temperature'))
+        if 'type' not in d['temperature']:
+            print("Type of temperature specification not present.")
+            raise SBLParsingException("Missing type for temperature range.")
+        if d['temperature']['type'] == "uniform":
+            if (
+                'start' not in d['temperature']
+                or
+                'stop' not in d['temperature']
+            ):
+                print("Start and stop of temperature range must be given.")
+                raise SBLParsingException("Range parameters unspecified.")
+            if (
+                'num' not in d['temperature']
+                and
+                'step' not in d['temperature']
+            ):
+                print("Either number of points or spacing must be specified.")
+                raise SBLParsingException("Range parameters unspecified.")
+            if 'num' in d['temperature'] and 'step' in d['temperature']:
+                print("Only one of 'num' or 'step' may be specified.")
+                raise SBLParsingException("Range parameters overspecified.")
+            l = d['temperature']['stop'] - d['temperature']['start']
+            if 'num' in d['temperature']:
+                num = d['temperature']['num']
+            else:
+                num = floor(l / d['temperature']['step'])
+            step = l / (num - 1)
+            temperatures = [
+                d['temperature']['start'] + i * step for i in range(num)
+            ]
+        elif d['temperature']['type'] == "explicit":
+            raise NotImplementedError("Explicit temperatures not implemented.")
         else:
-            num = floor(l / d['temperature']['step'])
-        step = l / (num - 1)
-        temperatures = [
-            d['temperature']['start'] + i * step for i in range(num)
-        ]
-    elif d['temperature']['type'] == "explicit":
-        raise NotImplementedError("Explicit temperatures not implemented.")
+            print((
+                "Temperature type '{}' not recognized."
+            ).format(d['temperature']['type']))
+            raise SBLParsingException("Temperature type not recognized.")
     else:
-        print((
-            "Temperature type '{}' not recognized."
-        ).format(d['temperature']['type']))
-        raise SBLParsingException("Temperature type not recognized.")
+        temperatures = None
 
     # read diffusion parameters
-    if d['diffusion']['type'] == 'knudsen':
-        knudsenparams = ['porediameter', 'voidage', 'tortuosity']
-        for param in knudsenparams:
-            if param not in d['diffusion'].keys():
-                print("Diffusion section missing '{}'.".format(param))
-                raise SBLParsingException("Missing diffusion parameters.")
-        speciesconstructor = partial(KnudsenSpecies, *[
-            d['diffusion'][param] for param in knudsenparams
-        ])
-    else:
-        print((
-            "Did not recognize diffusion type '{}'."
-        ).format(d['diffusion']['type']))
-        raise SBLParsingException("Unrecognized diffusion type.")
+    if 'diffusion' in d:
+        if allow_partial and verb:
+            print("Found section '{}'.".format('diffusion'))
+        if d['diffusion']['type'] == 'knudsen':
+            knudsenparams = ['porediameter', 'voidage', 'tortuosity']
+            for param in knudsenparams:
+                if param not in d['diffusion'].keys():
+                    print("Diffusion section missing '{}'.".format(param))
+                    raise SBLParsingException("Missing diffusion parameters.")
+            speciesconstructor = partial(KnudsenSpecies, *[
+                d['diffusion'][param] for param in knudsenparams
+            ])
+        else:
+            print((
+                "Did not recognize diffusion type '{}'."
+            ).format(d['diffusion']['type']))
+            raise SBLParsingException("Unrecognized diffusion type.")
 
     # make species list
-    if 'table' not in d['species']:
-        raise SBLParsingException("Missing species table.")
-    name = d['species'].get('longname', 'default')
-    if name == 'default':
-        name == 'omitted'
-    molweight = d['species'].get('molweight', 'default')
-    if molweight == 'default':
-        molweight == 'specified'
-    def checkrow(row):
-        if (
-            len(row)
-            != (1 + (name == 'specified') + (molweight == 'specified'))
-        ):
-            print("Unexpected length of table row.")
-            print("Expected {} columns: {}.".format(", ".join(
-                ['symbol']
-                + (['name'] if name == 'specified' else [])
-                + (['molweight'] if molweight == 'specified' else [])
-            )))
-            raise SBLParsingException("Unexpected length of table row.")
-    def getname(row):
-        if name == 'omitted':
-            return row[0]
-        elif name == 'specified':
-            return row[1]
-        else:
-            if verb:
-                print((
-                    "Using chemical name '{}' for all species; this was "
-                    "likely unintended. Try using 'DEFAULT', 'OMITTED', or "
-                    "'SPECIFIED'. "
-                ).format(name))
-            return name
-    def getmolweight(row):
-        if molweight == 'omitted':
-            raise SBLParsingException("Cannot ommit molecular weight.")
-        elif molweight == 'specified':
-            return row[2]
-    def makespecies(row):
-        checkrow(row)
-        return speciesconstructor(row[0], getname(row), getmolweight(row))
-    species = [makespecies(row) for row in d['species']['table']]
+    if 'species' in d:
+        if allow_partial and verb:
+            print("Found section '{}'.".format('species'))
+        if 'table' not in d['species']:
+            raise SBLParsingException("Missing species table.")
+        name = d['species'].get('longname', 'default')
+        if name == 'default':
+            name == 'omitted'
+        molweight = d['species'].get('molweight', 'default')
+        if molweight == 'default':
+            molweight == 'specified'
+        def checkrow(row):
+            if (
+                len(row)
+                != (1 + (name == 'specified') + (molweight == 'specified'))
+            ):
+                print("Unexpected length of table row.")
+                print("Expected {} columns: {}.".format(", ".join(
+                    ['symbol']
+                    + (['name'] if name == 'specified' else [])
+                    + (['molweight'] if molweight == 'specified' else [])
+                )))
+                raise SBLParsingException("Unexpected length of table row.")
+        def getname(row):
+            if name == 'omitted':
+                return row[0]
+            elif name == 'specified':
+                return row[1]
+            else:
+                if verb:
+                    print((
+                        "Using chemical name '{}' for all species; this was "
+                        "likely unintended. Try using 'DEFAULT', 'OMITTED', or "
+                        "'SPECIFIED'. "
+                    ).format(name))
+                return name
+        def getmolweight(row):
+            if molweight == 'omitted':
+                raise SBLParsingException("Cannot ommit molecular weight.")
+            elif molweight == 'specified':
+                return row[2]
+        def makespecies(row):
+            checkrow(row)
+            return speciesconstructor(row[0], getname(row), getmolweight(row))
+        species = [makespecies(row) for row in d['species']['table']]
 
     # make reaction list
     reactiontype = d['reactions'].get('type', 'arrcoeffs').lower()
@@ -281,6 +316,6 @@ def parse_sensible(f, verb=False):
         raise SBLParsingException("Unrecognized reaction type.")
     reactions = [makereaction(row) for row in d['reactions']['table']]
 
-    return precision, shape, temperatures, Mechanism(species, reactions)
+    return precision, shape, temperatures, species, reactions
 
 

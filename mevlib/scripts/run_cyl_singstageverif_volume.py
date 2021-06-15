@@ -17,19 +17,16 @@ plt.rc('text', usetex=True)
 plt.rc('axes', labelsize=18)
 
 
-nexact, kexact = 128, 64
-
-
-innermargin = 0.1       # use inner 90% for inside comparison
+nexact, kexact = 64, 32
 
 
 D = 5.4423
 cases = [
-    (240.0, 240.0, 60.0, 1.0),
-    (140.0, 840.0, 60.0, 1.0),
-    (180.0, 360.0, 60.0, 4.0),
-    (180.0, 360.0, 60.0, 0.1),
-    (180.0, 360.0, 60.0, 1.0)
+    (240.0, 240.0, 1.0),
+    (140.0, 840.0, 1.0),
+    (180.0, 360.0, 4.0),
+    (180.0, 360.0, 0.1),
+    (180.0, 360.0, 1.0)
 ]
 fns = [
     (
@@ -38,13 +35,14 @@ fns = [
     for i in range(5)
 ]
 rates = [1.5117e-3, 1.5117e-3, 6.0470e-3, 1.5117e-4, 1.5117e-3]
-compphi2s = [rate / D for (_, _, L, _), rate in zip(cases, rates)]
+compphi2s = [rate / D for rate in rates]
 cases = [
-    (Cylinder(case[0], case[1], case[2]), compphi2)
+    (Cylinder(case[0], case[1]), compphi2)
     for case, compphi2 in zip(cases, compphi2s)
 ]
 Ns = np.arange(1, 42, 4)
-l2errs, l2inerrs, l2sferrs = [[None for c in cases] for i in range(3)]
+l2errs = [None for c in cases]  # errors in L2 norm
+wterrs = [None for c in cases]  # errors in weighted norm
 
 
 multfig, multaxs = plt.subplots(5, 2, figsize=(8.0, 14.5))
@@ -60,24 +58,29 @@ for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
     refsoln = pickle.loads(pkl)
     oursoln = solfunc(refsoln['rmesh'], refsoln['zmesh'])
     versoln = refsoln['umesh']
-    sizearray = np.array(refsoln['rmesh'].shape)
-    margins = np.ceil(0.5 * innermargin * sizearray).astype(int)
-    for liz, hir, hiz, errlist, soln in [
-        (1, *(sizearray - 1), l2errs, refsoln['umesh']),
-        (margins[1], *(sizearray - 1 - margins), l2inerrs, refsoln['umesh']),
-        (1, *(sizearray - 1), l2sferrs, oursoln)
-    ]:
-        errlist[i] = [
-            np.sqrt(sum([
-                (solfunc(r, z, n=n, k=2*n) - u)**2
-                for r, z, u in zip(*map(lambda x: x.flatten(), [
-                    refsoln['rmesh'][0:hir,liz:hiz],
-                    refsoln['zmesh'][0:hir,liz:hiz],
-                    soln[0:hir,liz:hiz]
-                ]))
+    hi1, hi2 = np.array(refsoln['rmesh'].shape) - 1
+    l2errs[i] = [
+        np.sqrt(sum([
+            (solfunc(r, z, n=n, k=2*n) - u)**2
+            for r, z, u in zip(*map(lambda x: x.flatten(), [
+                refsoln['rmesh'][1:hi1,1:hi2],
+                refsoln['zmesh'][1:hi1,1:hi2],
+                refsoln['umesh'][1:hi1,1:hi2]
             ]))
-            for n in Ns
-        ]
+        ]))
+        for n in Ns
+    ]
+    wterrs[i] = [
+        np.sqrt(sum([
+            2 * np.pi * r * (solfunc(r, z, n=n, k=2*n) - u)**2
+            for r, z, u in zip(*map(lambda x: x.flatten(), [
+                refsoln['rmesh'][1:hi1,1:hi2],
+                refsoln['zmesh'][1:hi1,1:hi2],
+                refsoln['umesh'][1:hi1,1:hi2]
+            ]))
+        ]))
+        for n in Ns
+    ]
     meldsoln = np.vstack((np.flip(versoln, axis=0), oursoln))
     meldrmesh = np.vstack((
         refsoln['rmesh'] - shp.R, refsoln['rmesh']
@@ -88,7 +91,7 @@ for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
         (singaxs[i][0], singaxs[i][1])
     ]:
         cms = [None, None]
-        cms[0] = lax.contourf(meldrmesh, meldzmesh, meldsoln, cmap='hot')
+        cms[0] = lax.contourf(meldrmesh, meldzmesh, meldsoln)
         lax.axvline(x=0.0, color='r')
         err = np.abs(oursoln - versoln) / versoln
         print("Case {} error range ({}, {})".format(i+1, err.min(), err.max()))
@@ -97,40 +100,38 @@ for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
         ))
         cms[1] = rax.contourf(
             refsoln['rmesh'], refsoln['zmesh'], err,
-            lvls, norm=colors.LogNorm()
+            lvls, norm=colors.LogNorm(),
+            cmap='winter'
         )
-        lax.set_title(r"~~DNS \quad\quad Series")
+        lax.set_title("Solution Comparison")
         rax.set_title("Relative Error")
         # these colorbars are the same for each set
         cbs = [plt.colorbar(cm, ax=ax) for ax, cm in zip([lax, rax], cms)]
-    for ax in [*multaxs[i, :], *singaxs[i]]:
+    for ax in multaxs[i, :]:
         ax.set_xlabel(r"\( r \)")
         ax.set_ylabel(r"\( z \)")
 multfig.tight_layout()
 
 
 l2fig, l2ax = plt.subplots(1, 1, figsize=(6.0, 6.0))
-l2infig, l2inax = plt.subplots(1, 1, figsize=(6.0, 6.0))
-l2sffig, l2sfax = plt.subplots(1, 1, figsize=(6.0, 6.0))
-for i, (errs, inerrs, sferrs, mkr) in enumerate(
-    zip(l2errs, l2inerrs, l2sferrs, ['x', 'o', '+', '<', '>'])
-):
+for i, (errs, mkr) in enumerate(zip(l2errs, ['x', 'o', '+', '<', '>'])):
     l2ax.semilogy(
         Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
     )
-    l2inax.semilogy(
-        Ns, inerrs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
+l2ax.grid()
+l2ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
+l2ax.set_ylabel(r"\( L^2 \) error")
+l2ax.legend()
+
+wtfig, wtax = plt.subplots(1, 1, figsize=(6.0, 6.0))
+for i, (errs, mkr) in enumerate(zip(wterrs, ['x', 'o', '+', '<', '>'])):
+    wtax.semilogy(
+        Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
     )
-    l2sfax.semilogy(
-        Ns, sferrs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
-    )
-l2inax.set_title("Interior Errors")
-l2sfax.set_title("Self Errors")
-for ax in [l2ax, l2inax, l2sfax]:
-    ax.grid()
-    ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
-    ax.set_ylabel(r"\( L^2 \) error")
-    ax.legend()
+wtax.grid()
+wtax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
+wtax.set_ylabel(r"\( L^2 \) error")
+wtax.legend()
 
 
 if showfigs():
@@ -138,11 +139,9 @@ if showfigs():
 else:
     for ext in ['svg', 'pdf']:
         l2fig.savefig(imgpath("comparison_l2errs.{}".format(ext)))
-        l2infig.savefig(imgpath("comparison_l2innererrs.{}".format(ext)))
-        l2sffig.savefig(imgpath("comparison_l2selferrs.{}".format(ext)))
+        wtfig.savefig(imgpath("comparison_wterrs.{}".format(ext)))
         multfig.savefig(imgpath("comparison_cases.{}".format(ext)))
         for i, fig in enumerate(singfigs):
-            fig.tight_layout()
             fig.savefig(imgpath("comparison_case{}.{}".format(i+1, ext)))
 
 

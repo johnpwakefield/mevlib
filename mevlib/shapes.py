@@ -19,10 +19,8 @@ class Shape(ABC):
 
 class Sphere(Shape):
 
-    def __init__(self, R, charlen=None):
-        if charlen is None:
-            charlen = R / 3
-        self.R, self.charlen = R, charlen
+    def __init__(self, R):
+        self.R = R
 
     def ptwise(self, a2, r):
         return sph_ptwise(a2, self.R, r)
@@ -33,10 +31,8 @@ class Sphere(Shape):
 
 class Cylinder(Shape):
 
-    def __init__(self, R, H, charlen=None):
-        if charlen is None:
-            charlen = 0.5 * (R * H / (R + H))
-        self.R, self.H, self.charlen, self.zero_cache = R, H, charlen, None
+    def __init__(self, R, H):
+        self.R, self.H, self.zero_cache = R, H, None
 
     def ptwise_radial_terms(self, a2, trunc, r, z):
         return cyl_ptwise_radial_terms(a2, self.R, self.H, trunc, r, z)
@@ -81,10 +77,8 @@ class Cylinder(Shape):
 
 class Prism(Shape):
 
-    def __init__(self, Lx, Ly, Lz, charlen=None):
-        if charlen is None:
-            charlen = 0.5 * Lx * Ly * Lz / (Lx * Ly + Lx * Lz + Ly * Lz)
-        self.Lx, self.Ly, self.Lz, self.charlen = Lx, Ly, Lz, charlen
+    def __init__(self, Lx, Ly, Lz):
+        self.Lx, self.Ly, self.Lz = Lx, Ly, Lz
 
     @staticmethod
     def split_prec(precision):

@@ -21,7 +21,7 @@ file_types = {
     '.sbl'  : ("sensible", parse_sensible)
 }
 
-def parse_attempt(f, ext, verb):
+def parse_attempt(f, ext, verb, allow_partial):
     name, parser = file_types[ext]
     try:
         if verb:
@@ -35,21 +35,19 @@ def parse_attempt(f, ext, verb):
         print(err)
         return None
 
-def parse_dynamic(f, verb):
-    if len(f.split('.')):
-        rawext = f.split('.')[-1]
-        ext = rawext if rawext in file_types.keys() else None
-    else:
-        ext = None
+def parse_dynamic(fn, verb, allow_partial=False):
+    ext = fn[:-4] if fn[:-4] in file_types.keys() else None
     if ext is not None:
         if verb:
             print("Inferring file type from file extension.")
-        params = parse_attempt(f, ext, verb)
+        with open(fn, 'r') as f:
+            params = parse_attempt(f, ext, verb, allow_partial)
         if params is not None:
             return params
     for k in file_types.keys():
         if k != ext:
-            params = parse_attempt(f, k, verb)
+            with open(fn, 'r') as f:
+                params = parse_attempt(f, k, verb, allow_partial)
             if params is not None:
                 return params
     print("Unable to parse input file.")

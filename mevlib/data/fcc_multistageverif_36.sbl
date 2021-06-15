@@ -1,41 +1,10 @@
 
 
-PRECISION
-
-TYPE TRUNC
-
-NTRUNC  64
-KTRUNC  128
-
-END
-
-
-SHAPE
-
-TYPE CYLINDER
-
-RADIUS  80
-HEIGHT  550
-
-END
-
-
-TEMPERATURE
-
-TYPE UNIFORM
-
-START   500.0
-STOP    900.0
-NUM     800
-
-END
-
-
 DIFFUSION
 
 TYPE KNUDSEN        # other types to be added; this is the default
 
-POREDIAMETER    0.002
+POREDIAMETER    2.0
 VOIDAGE         0.319
 TORTUOSITY      7.0
 
@@ -72,24 +41,24 @@ TYPE ARRCOEFFS  # for A, b, Ea, T0 in A T^b e^(-Ea / R (1/T - 1/T0))
 PREFACTOR SPECIFIED     # this is the default
 EXPONENT OMITTED        # this is the default, equivalent to 0
 ACTENERGY SPECIFIED     # this is the default
-REFTEMP 773             # the default is to ommit the term
                         # the gas constant may not be specified
 
 TABLE
-#   reaction    k0      Ea
-    S -> D      1.413   47.6
-    S -> G      4.337   43.4
-    S -> LPG    1.163   38.5
-    S -> DR     0.114   30.2
-    S -> CK     0.386   30.0
-    D -> G      0.229   54.1
-    D -> LPG    0.161   62.9
-    D -> DR     0.041   66.7
-    D -> CK     0.137   65.0
-    G -> LPG    0.128   80.5
-    G -> DR     0.030   85.2
-    G -> CK     0.103   77.3
+#   reaction    A                   Ea
+    S -> D      139.09853999700002 47.6
+    S -> G      231.167268 43.4
+    S -> LPG    29.1281759991 38.5
+    S -> DR     0.77966399997 30.2
+    S -> CK     2.5503360003 30.0
+    D -> G      65.19562800003 54.1
+    D -> LPG    178.22337599969998 62.9
+    D -> DR     82.605312 66.7
+    D -> CK     205.53603599997 65.0
+    G -> LPG    2193.663696000003 80.5
+    G -> DR     1088.664912 85.2
+    G -> CK     1074.177635994 77.3
 END
+
 
 END
 
