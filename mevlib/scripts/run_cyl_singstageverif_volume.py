@@ -41,7 +41,8 @@ cases = [
     for case, compphi2 in zip(cases, compphi2s)
 ]
 Ns = np.arange(1, 42, 4)
-l2errs = [None for c in cases]
+l2errs = [None for c in cases]  # errors in L2 norm
+wterrs = [None for c in cases]  # errors in weighted norm
 
 
 multfig, multaxs = plt.subplots(5, 2, figsize=(8.0, 14.5))
@@ -61,6 +62,17 @@ for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
     l2errs[i] = [
         np.sqrt(sum([
             (solfunc(r, z, n=n, k=2*n) - u)**2
+            for r, z, u in zip(*map(lambda x: x.flatten(), [
+                refsoln['rmesh'][1:hi1,1:hi2],
+                refsoln['zmesh'][1:hi1,1:hi2],
+                refsoln['umesh'][1:hi1,1:hi2]
+            ]))
+        ]))
+        for n in Ns
+    ]
+    wterrs[i] = [
+        np.sqrt(sum([
+            2 * np.pi * r * (solfunc(r, z, n=n, k=2*n) - u)**2
             for r, z, u in zip(*map(lambda x: x.flatten(), [
                 refsoln['rmesh'][1:hi1,1:hi2],
                 refsoln['zmesh'][1:hi1,1:hi2],
@@ -111,12 +123,23 @@ l2ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
 l2ax.set_ylabel(r"\( L^2 \) error")
 l2ax.legend()
 
+wtfig, wtax = plt.subplots(1, 1, figsize=(6.0, 6.0))
+for i, (errs, mkr) in enumerate(zip(wterrs, ['x', 'o', '+', '<', '>'])):
+    wtax.semilogy(
+        Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
+    )
+wtax.grid()
+wtax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
+wtax.set_ylabel(r"\( L^2 \) error")
+wtax.legend()
+
 
 if showfigs():
     plt.show()
 else:
     for ext in ['svg', 'pdf']:
         l2fig.savefig(imgpath("comparison_l2errs.{}".format(ext)))
+        wtfig.savefig(imgpath("comparison_wterrs.{}".format(ext)))
         multfig.savefig(imgpath("comparison_cases.{}".format(ext)))
         for i, fig in enumerate(singfigs):
             fig.savefig(imgpath("comparison_case{}.{}".format(i+1, ext)))

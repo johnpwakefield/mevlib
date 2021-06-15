@@ -33,20 +33,21 @@ def computetransform(shpe, mech, T, precision, dropnonreacting=False):
 # pointwise transform (setup and compute functions so we don't recompute at
 # each point)
 
-def diag_ptwise_setup(shpe, mech, T, precision):
+def diag_ptwise_setup(shpe, mech, bdry, T, precision):
     #TODO interrogate the Mechanism object to choose an ideal method
     lams, R = la.eig(mech.getmatrix(T))
     if np.max(np.abs(lams.imag)) > 1e-8:
         print("Matrix has imaginary eigenvalues (irreversible).")
     lams, R = np.real_if_close(lams), np.real_if_close(R)
-    return shpe, lams, R, precision
+    ubdry = la.solve(R, bdry.reshape(-1,1))
+    return shpe, lams, R, ubdry, precision
 
-def diag_ptwise_eval(setupdata, bdry, *coords):
-    shpe, lams, R, precision = setupdata
+def diag_ptwise_eval(setupdata, *coords):
+    shpe, lams, R, ubdry, precision = setupdata
     mult = np.array([
         1.0 if lam == 0.0 else shpe.ptwise(lam, precision, *coords)
         for lam in lams
     ])
-    return np.dot(R, np.dot(np.diag(mult), la.solve(R, bdry.reshape(-1,1))))
+    return np.dot(R, np.dot(np.diag(mult), ubdry))
 
 

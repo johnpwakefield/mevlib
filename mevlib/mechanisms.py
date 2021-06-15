@@ -1,9 +1,12 @@
 
 
 from abc import ABC, abstractmethod
-from math import sqrt, inf, exp
+from math import sqrt, inf, exp, pi
 
 import numpy as np
+
+
+GASCONST = 8.31446261815324e-3  # kJ per mol Kelvin
 
 
 class Species(ABC):
@@ -35,7 +38,11 @@ class KnudsenSpecies(Species):
         )
 
     def effective_diffusion(self, T):
-        return 48.5 * self.Dpore * sqrt(T / self.Mi) * self.epspore / self.tau
+        # input units are nm for Dpore, kJ per mol K for GASCONST, K for T, and
+        # g per mod for Mi; output units are square micrometers per second
+        return 1e6 / 3 * self.Dpore * sqrt(
+            8 * GASCONST * T / pi / self.Mi
+        ) * self.epspore / self.tau
 
 class Reaction(ABC):
     src, dst = None, None       # names of species
@@ -51,8 +58,6 @@ class Reaction(ABC):
         pass
 
 class ArrheniusReaction(Reaction):
-
-    GASCONST = 8.31446261815324e-3  # kJ per mol Kelvin
 
     def __init__(self, src, dst, A, b, Ea, T0):
         super().__init__(src, dst)
@@ -75,7 +80,7 @@ class ArrheniusReaction(Reaction):
             T0inv = 0.0
         else:
             T0inv = self.T0**(-1)
-        return A * exp(-self.Ea / self.GASCONST * (1 / T - T0inv))
+        return A * exp(-self.Ea / GASCONST * (1 / T - T0inv))
 
 class Mechanism(object):
 
@@ -156,22 +161,28 @@ class Mechanism(object):
                     )
         return undef
 
-    def getmatrix(self, T):
-        n = len(self.spcs)
+    def getkijs(self, T):
         symbols = [spc.symb for spc in self.spcs]
-        kijs, Dis = np.zeros((n, n)), np.empty((n,))
+        kijs = np.zeros((len(self.spcs), len(self.spcs)))
+        for rxn in self.rxns:
+            i, j = symbols.index(rxn.src), symbols.index(rxn.dst)
+            kijs[i, j] = rxn.kij(T)
+        return kijs
+
+    def getDis(self, T):
+        Dis = np.empty((len(self.spcs),))
         for i, spcs in enumerate(self.spcs):
             Dis[i] = spcs.effective_diffusion(T)
-        for rxn in self.rxns:
-            j, i = symbols.index(rxn.src), symbols.index(rxn.dst)
-            kijs[i, j] = rxn.kij(T)
-        # choose characteristic length scale to be the unit
-        # note the transpose below to fix index order
-        phiij2s = kijs / np.tile(Dis.reshape((-1,1)), len(self.spcs))
-        B = np.diag(np.sum(phiij2s, axis=0)) - phiij2s
-#       TODO (what was supposed to be done here?)
-#       np.set_printoptions(formatter={'float': "{0:0.4e}".format})
-#       print(B)
+        return Dis
+
+    def getmatrix(self, T):
+        kijs, Dis = self.getkijs(T), self.getDis(T)
+        consumption = np.diag(np.sum(
+            kijs / np.tile(Dis.reshape((-1,1)), len(self.spcs)),
+            axis=1
+        ))
+        production = kijs.T / np.tile(Dis.reshape((-1,1)), len(self.spcs))
+        B = consumption - production  # yes, this is a bad sign convention
         return B
 
 

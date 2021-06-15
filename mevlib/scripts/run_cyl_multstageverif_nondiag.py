@@ -22,65 +22,64 @@ plt.rc('axes', labelsize=18)
 
 
 cases = [
-#   ((180.0, 360.0), 600.0, (0.9, 0.8, 0.7, 0.6, 0.2, 0.2)),
-#   ((180.0, 360.0), 800.0, (0.9, 0.8, 0.7, 0.6, 0.2, 0.2)),
-#   ((180.0, 360.0), 773.0, (0.3, 0.4, 0.5, 0.6, 0.4, 0.3))
-    # this next line is guessed
+    ((180.0, 360.0), 600.0, (36.0, 32.0, 28.0, 24.0, 8.0, 0.0)),
+    ((180.0, 360.0), 800.0, (36.0, 32.0, 28.0, 24.0, 8.0, 0.0)),
     ((180.0, 360.0), 600.0, (12.0, 16.0, 20.0, 24.0, 16.0, 0.0))
+]
+mechfiles = [ # this is a hack because of the issue with the verif data
+    'data/fcc_multistageverif_36.sbl',
+    'data/fcc_multistageverif_36.sbl',
+    'data/fcc_multistageverif_12.sbl'
 ]
 drs = ["H", "rad"]
 components = ['S', 'D', 'Gas', 'LPG', 'DR']
+reffile = "data/multistage_cyl.pickle"
 
 
-# build shapes
+refdata = pickle.loads(pkgutil.get_data('mevlib', reffile))
 cases = [(Cylinder(*dims), T, np.array(bdry)) for dims, T, bdry in cases]
-
-
-# parse test mechanism
-mechconf = pkgutil.get_data('mevlib', 'data/fcc_lattanzietal_2020.sbl')
-#mechconf = pkgutil.get_data('mevlib', 'data/fcc_multistageverif.sbl')
-precision, shape, temperatures, species, reactions = parse_attempt(
-    StringIO(mechconf.decode('utf-8')), '.sbl', True, True
-)
-mech = Mechanism(species, reactions)
-if precision is None:
-    precision = {'ntrunc': 128, 'ktrunc': 64}
-
-
-# compute and make plots
 l2errs = [None for c in cases]
 figs, axs = zip(*[
     plt.subplots(1, 2, figsize=(8.0, 14.5)) for i in range(len(cases))
 ])
-for i, (shape, temp, bdry) in enumerate(cases):
+for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
+    # parse test mechanism
+    mechconf = pkgutil.get_data('mevlib', mechfile)
+    precision, shape, temperatures, species, reactions = parse_attempt(
+        StringIO(mechconf.decode('utf-8')), '.sbl', True, True
+    )
+    if precision is None:
+        precision = {'ntrunc': 128, 'ktrunc': 64}
+    mech = Mechanism(species, reactions)
     # compute phi2
     # note this is for fcc_lattanzietal_2020 specifically
-    skijs = 0.069537
-    Di = 5.138e-9
-    phi2 = skijs / Di
+    refkijsum = 0.069537
+    refDi = 5.138e-9
+    refphi2 = refkijsum / refDi
+    libDis = mech.getDis(temp)
+    libkijs = mech.getkijs(temp)
+    np.set_printoptions(formatter={'float': "{0:0.4e}".format})
+    print("library computed Dis are {}.".format(libDis))
+    print("library computed sum of kijs is {}.".format(
+        np.sum(libkijs, axis=0))
+    )
+    phi2 = sum(libkijs[:, 0] / libDis[0])
     # compare this phi2 to the one provided by diagonalization class
-    _, lams, _, _ = diag_ptwise_setup(shape, mech, temp, precision)
-    # TODO fix this
-    print(phi2)
-    phi2 *= 1e-12
-    #TODO -------- trial and error
-    #phi2 = 4.5e-6
-    # ------------
-    # plot comparison
+    _, lams, _, _, _ = diag_ptwise_setup(cyl, mech, bdry, temp, precision)
+    print(lams) #TODO fix this
+    print("library phi2 is {}".format(max(lams)))
+    print("manual phi2 is {}.".format(phi2))
     for k, dr in enumerate(drs):
-        # read reference file
-        fn = "data/multistage_cyl_case{}_{}.pickle".format(i+1, dr)
-        refsoln = pickle.loads(pkgutil.get_data('mevlib', fn))
         # compute our solution, plot slices
-        ref = refsoln[components[0]]
+        ref = refdata["case{}_{}".format(i+1, dr.lower())][components[0]]
         if dr == "H":
             our = [
-                bdry * shape.ptwise(phi2, precision, 0.0, 1e6 * z + shape.H / 2)
+                bdry * cyl.ptwise(phi2, precision, 0.0, 1e6 * z + cyl.H / 2)
                 for z in ref['x']
             ]
         else:
             our = [
-                bdry * shape.ptwise(phi2, precision, 1e6 * r, shape.H / 2)
+                bdry * cyl.ptwise(phi2, precision, 1e6 * r, cyl.H / 2)
                 for r in ref['x']
             ]
         axs[i][k].plot(

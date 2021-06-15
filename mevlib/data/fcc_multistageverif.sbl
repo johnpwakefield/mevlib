@@ -1,41 +1,10 @@
 
 
-PRECISION
-
-TYPE TRUNC
-
-NTRUNC  64
-KTRUNC  128
-
-END
-
-
-SHAPE
-
-TYPE CYLINDER
-
-RADIUS  80
-HEIGHT  550
-
-END
-
-
-TEMPERATURE
-
-TYPE UNIFORM
-
-START   500.0
-STOP    900.0
-NUM     800
-
-END
-
-
 DIFFUSION
 
 TYPE KNUDSEN        # other types to be added; this is the default
 
-POREDIAMETER    0.002
+POREDIAMETER    2.0
 VOIDAGE         0.319
 TORTUOSITY      7.0
 
@@ -55,7 +24,6 @@ TABLE
     LPG "Liquid Petroleum Gas"  52.0
     DR  "Dry Gas"               16.0
     CK  "Coke"                  400.0
-    IN  "Inert Species"         42.0
 END
 
 END
@@ -73,23 +41,22 @@ TYPE ARRCOEFFS  # for A, b, Ea, T0 in A T^b e^(-Ea / R (1/T - 1/T0))
 PREFACTOR SPECIFIED     # this is the default
 EXPONENT OMITTED        # this is the default, equivalent to 0
 ACTENERGY SPECIFIED     # this is the default
-REFTEMP 773             # the default is to ommit the term
                         # the gas constant may not be specified
 
 TABLE
-#   reaction    k0      Ea
-    S -> D      1.413   47.6
-    S -> G      4.337   43.4
-    S -> LPG    1.163   38.5
-    S -> DR     0.114   30.2
-    S -> CK     0.386   30.0
-    D -> G      0.229   54.1
-    D -> LPG    0.161   62.9
-    D -> DR     0.041   66.7
-    D -> CK     0.137   65.0
-    G -> LPG    0.128   80.5
-    G -> DR     0.030   85.2
-    G -> CK     0.103   77.3
+#   reaction    A                   Ea
+    S -> D      154.5539333333333   47.6
+    S -> G      256.85252           43.4
+    S -> LPG    32.36463999999999   38.5
+    S -> DR     0.866293333333333   30.2
+    S -> CK     2.833706666666667   30.0
+    D -> G      72.43958666666667   54.1
+    D -> LPG    198.0259733333333   62.9
+    D -> DR     91.78368            66.7
+    D -> CK     228.3733733333333   65.0
+    G -> LPG    2437.404106666667   80.5
+    G -> DR     1209.62768          85.2
+    G -> CK     1193.530706666666   77.3
 END
 
 END
