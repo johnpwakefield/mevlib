@@ -99,18 +99,18 @@ methods = [
         lambda tk: sum_aitken(cyl_intgtd_axial_terms(a2, R, H, tk)),
         cyl_axial_exact, lambda tk: tk, cyl_ax_akn_cost, cyltrunc
     ),
-    (
-        "Prism - Radial - Series",      # one on cross-section
-        lambda rtk: 2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk),
-        2 * psm_radial_exact, lambda rtk: rtk**2, lambda n: 2 * psm_xd_cost(n),
-        psmseriestrunc
-    ),
-    (
-        "Prism - Axial - Series",       # one on ends
-        lambda rtk: psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk),
-        psm_axial_exact, lambda rtk: rtk**2, psm_xd_cost,
-        psmseriestrunc
-    ),
+#   (
+#       "Prism - Radial - Series",      # one on cross-section
+#       lambda rtk: 2 * psm_intgtd_xdir(a2, Ly, Lx, Lz, rtk),
+#       2 * psm_radial_exact, lambda rtk: rtk**2, lambda n: 2 * psm_xd_cost(n),
+#       psmseriestrunc
+#   ),
+#   (
+#       "Prism - Axial - Series",       # one on ends
+#       lambda rtk: psm_intgtd_xdir(a2, Lx, Ly, Lz, rtk),
+#       psm_axial_exact, lambda rtk: rtk**2, psm_xd_cost,
+#       psmseriestrunc
+#   ),
 #   (
 #       "Prism - Total - Series",
 #       lambda rtk: (
