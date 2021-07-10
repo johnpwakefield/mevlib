@@ -314,6 +314,6 @@ def sph_ptwise(a2, R, r):
 
 def sph_intgtd(a2, R):
     a = np.sqrt(a2)
-    return 3.0 / (R * a) * (np.coth(R * a) - (R * a)**(-1))
+    return 3.0 / (R * a) * (np.tanh(R * a)**(-1) - (R * a)**(-1))
 
 
