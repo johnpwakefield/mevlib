@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 
 import click
@@ -14,13 +13,21 @@ you are welcome to redistribute it under the GNU General Public License.
 
 
 @click.command()
-@click.option('--fmt', nargs=1, type=str, default=None)
-@click.option('-d', '--discard-products/--keep-products', default=False)
+@click.option('-a', '--all', 'wall', is_flag=True)
+@click.option('-i', '--ints', 'wints', is_flag=True)
+@click.option('-d', '--diag', 'wdiag', is_flag=True)
+@click.option('-m', '--mevs', 'wmevs', is_flag=True)
+@click.option('-g', '--augd', 'waugd', is_flag=True)
+@click.option('-r', '--rate', 'wrate', is_flag=True)
+@click.option('-v/-q', '--verb/--quiet', default=True)
 @click.argument('src', type=click.Path(exists=True))
-@click.argument('dst', type=click.Path(exists=False))
-def maketable(src, dst, fmt=None, discard_products=False):
+@click.argument('fmt', type=str)
+def maketable(
+        src, fmt, verb=None,
+        wall=None, wints=None, wdiag=None, wmevs=None, waugd=None, wrate=None
+        ):
     copystatement()
-    make_table(src, dst, fmt, not discard_products, True)
+    make_table(src, fmt, wall, wints, wdiag, wmevs, waugd, wrate, verb)
 
 
 @click.command()

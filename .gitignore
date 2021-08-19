@@ -11,17 +11,8 @@ __pycache__
 *.mod
 *.so
 
-# old files (this is temporary during the transition period)
-old*
-
-# mevlookup files are generated outputs
-mevlookup.f03
-mevlookup.f90
-
-# compiled files
-*.mod
-*.o
-*.so
+# data files
+*.dat
 
 # virtual environment directories
 MEVLIB.egg-info

@@ -53,7 +53,6 @@ for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
     for k, dr in enumerate(drs):
         # compute our solution, plot slices
         refsoln = refdata["case{}_{}".format(i+1, dr.lower())]
-        # TODO [:3] in line below temporary test
         for j, ref in enumerate([refsoln[k] for k in components]):
             diagdata = diag_ptwise_setup(cyl, mech, bdry, temp, precision)
             xs = ref['x'][1:-1]

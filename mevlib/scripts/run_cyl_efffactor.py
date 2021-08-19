@@ -49,17 +49,23 @@ plotdata_single = np.empty((len(phi2s), len(Hs)))
 for k, phi2 in enumerate(phi2s):
     for i, (R, H) in enumerate(zip(Rs, Hs)):
         plotdata_single[k,i] = S(np.sqrt(phi2), R, H)
-fig3, axs3 = plt.subplots(1, 1)
-for k, phi2 in enumerate(phi2s):
-    axs3.semilogx(
-        Hs / Rs, plotdata_single[k,:],
-        'C{}-'.format(k+1), label=r"\( \phi^2 = {} \)".format(phi2)
-    )
-axs3.set_xlabel(r"\( H / (2 R) \)")
-axs3.legend()
-axs3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-axs3.grid()
-axs3.set_ylabel("Effectiveness Factor")
+fig3, ax3 = plt.subplots(1, 1)
+lines = [
+        ax3.semilogx(
+            Hs / Rs, plotdata_single[k,:],
+            'C{}-'.format(k+1), label=r"\( a^2 = {} \)".format(phi2)
+            )
+        for k, phi2 in enumerate(phi2s)
+        ]
+ax3.set_xlabel(r"\( H / (2 R) \)")
+#ax3.legend()
+for line, xy in zip(lines, [(8.0, 0.31), (3.0, 0.44), (2.0, 0.64), (4.0, 0.95)]):
+    ax3.annotate(
+            line[0].get_label(), xy=xy, fontsize='small', color=line[0].get_color()
+            )
+ax3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+ax3.grid()
+ax3.set_ylabel("Effectiveness Factor")
 
 
 plotdata_check = np.empty((3, len(Hs)))
@@ -67,17 +73,17 @@ for i, (R, H) in enumerate(zip(Rs, Hs)):
     plotdata_check[0,i] = S(phi2nom, R, H)
     plotdata_check[1,i] = AN(phi2nom, R, H)
     plotdata_check[2,i] = BK(phi2nom, R, H)
-fig5, axs5 = plt.subplots(1, 1)
-axs5.semilogx(
+fig5, ax5 = plt.subplots(1, 1)
+ax5.semilogx(
     0.5 * Hs / Rs, plotdata_check[0,:], 'k-', label=r"\( A_N + B_K \)"
 )
-axs5.semilogx(0.5 * Hs / Rs, plotdata_check[1,:], 'b-', label=r"\( A_N \)")
-axs5.semilogx(0.5 * Hs / Rs, plotdata_check[2,:], 'r-', label=r"\( B_K \)")
-axs5.set_xlabel(r"\( H / (2 R) \)")
-axs5.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-axs5.grid()
-axs5.set_ylabel("Effectiveness Factor")
-axs5.legend()
+ax5.semilogx(0.5 * Hs / Rs, plotdata_check[1,:], 'b-', label=r"\( A_N \)")
+ax5.semilogx(0.5 * Hs / Rs, plotdata_check[2,:], 'r-', label=r"\( B_K \)")
+ax5.set_xlabel(r"\( H / (2 R) \)")
+ax5.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+ax5.grid()
+ax5.set_ylabel("Effectiveness Factor")
+ax5.legend()
 
 
 if showfigs():

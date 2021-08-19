@@ -8,8 +8,13 @@ from mevlib.scalar import sph_ptwise
 from mevlib.options import imgpath, showfigs
 
 
+plt.rc('font', size=12)
+plt.rc('text', usetex=True)
+plt.rc('axes', labelsize=18)
+
+
 R = 120.0
-a2 = 0.2**2
+a2 = 0.04**2
 rs = np.linspace(0.0, R, 300)
 
 
@@ -35,6 +40,7 @@ if showfigs():
     plt.show()
 else:
     for i, fig in enumerate([fig1, fig2]):
+        fig.tight_layout()
         for ext in ['pdf', 'svg']:
             fig.savefig(imgpath("sph_solvis-{}.{}".format(i+1, ext)))
 

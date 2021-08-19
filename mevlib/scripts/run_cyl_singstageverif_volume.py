@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 
+from math import sqrt
+
 import pkgutil
 import pickle
 
@@ -18,6 +20,7 @@ plt.rc('axes', labelsize=18)
 
 
 nexact, kexact = 64, 32
+nspatial, kspatial = 32, 16
 
 
 D = 5.4423
@@ -32,11 +35,11 @@ fns = [
     (
         "/data/singlestage_cyl_case{}.pickle"
     ).format(i+1)
-    for i in range(5)
+    for i in range(len(cases))
 ]
 rates = [1.5117e-3, 1.5117e-3, 6.0470e-3, 1.5117e-4, 1.5117e-3]
 compphi2s = [rate / D for rate in rates]
-cases = [
+pcases = [
     (Cylinder(case[0], case[1]), compphi2)
     for case, compphi2 in zip(cases, compphi2s)
 ]
@@ -46,11 +49,13 @@ wterrs = [None for c in cases]  # errors in weighted norm
 
 
 multfig, multaxs = plt.subplots(5, 2, figsize=(8.0, 14.5))
+# note the individual ones are made at roughly the right aspect ratio
 singfigs, singaxs = zip(*[
-    plt.subplots(1, 2, figsize=(9.0, 4.0)) for i in range(5)
+    plt.subplots(1, 2, figsize=(4 * R * ar + 0.5, H * ar))
+    for R, H, ar in [(R, H, sqrt(16.0 / (R * H))) for R, H, _ in cases]
 ])
-for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
-    def solfunc(r, z, n=nexact, k=kexact):
+for i, ((shp, phi2), fn) in enumerate(zip(pcases, fns)):
+    def solfunc(r, z, n=nspatial, k=kspatial):
         return np.vectorize(shp.ptwise)(
             phi2, {'ntrunc': n, 'ktrunc': k}, r, z
         )
@@ -103,14 +108,19 @@ for i, ((shp, phi2), fn) in enumerate(zip(cases, fns)):
             lvls, norm=colors.LogNorm(),
             cmap='winter'
         )
-        lax.set_title("Solution Comparison")
-        rax.set_title("Relative Error")
+        #lax.set_title("Solution Comparison")
+        #rax.set_title("Relative Error")
+        for ax in [lax, rax]:
+            ax.set_xlabel(r"\( r \)")
+            ax.set_ylabel(r"\( z \)")
         # these colorbars are the same for each set
         cbs = [plt.colorbar(cm, ax=ax) for ax, cm in zip([lax, rax], cms)]
     for ax in multaxs[i, :]:
         ax.set_xlabel(r"\( r \)")
         ax.set_ylabel(r"\( z \)")
 multfig.tight_layout()
+for fig in singfigs:
+    fig.tight_layout()
 
 
 l2fig, l2ax = plt.subplots(1, 1, figsize=(6.0, 6.0))

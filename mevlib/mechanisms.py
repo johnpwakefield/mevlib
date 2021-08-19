@@ -44,6 +44,11 @@ class KnudsenSpecies(Species):
             8 * GASCONST * T / pi / self.Mi
         ) * self.epspore / self.tau
 
+    def effective_diffusion_unrootscaled(self):
+        return 1e6 / 3 * self.Dpore * sqrt(
+            8 * GASCONST * pi / self.Mi
+        ) * self.epspore / self.tau
+
 class Reaction(ABC):
     src, dst = None, None       # names of species
 
@@ -83,6 +88,13 @@ class ArrheniusReaction(Reaction):
         return A * exp(-self.Ea / GASCONST * (1 / T - T0inv))
 
 class Mechanism(object):
+    """
+    To avoid confusion no methods here should change the reaction from the
+    configuration file; all species, the ordering, and so on should remain as
+    specified.  Many methods and checks done may however be used for
+    optimization or to provide suggestions to the end user (eg if species
+    should be reordered).
+    """
 
     spcs = None             # list of species objects
     rxns = None             # list of reaction objects
@@ -93,7 +105,7 @@ class Mechanism(object):
     def __init__(self, spcs, rxns):
         self.spcs, self.rxns = spcs, rxns
 
-    def reversible(self):
+    def isreversible(self):
         edges = [(rxn.src, rxn.dst) for rxn in self.rxns]
         def findroot(es):
             ns = list(set([n for e in es for n in e]))
@@ -125,20 +137,17 @@ class Mechanism(object):
                 print("All species are involved in at least one reaction.")
         return nonreacting
 
-# TODO this should be re-enabled after we deal with how sorting is going to
-# work
-#   def findproducts(self, verb):
-#       products = [
-#           spc.symb for spc in self.spcs
-#           if not any([spc.symb == rxn.src for rxn in self.rxns])
-#       ]
-#       self.spcs.sort(key=lambda spc: spc.symb in products)
-#       self.numactive = len(self.spcs) - len(products)
-#       if verb:
-#           print((
-#               "Found {} product species:\n\t{}"
-#           ).format(len(products), ", ".join(products)))
-#       return products
+    def findproducts(self, verb):
+        products = [
+            spc.symb for spc in self.spcs
+            if not any([spc.symb == rxn.src for rxn in self.rxns])
+        ]
+        self.numactive = len(self.spcs) - len(products)
+        if verb:
+            print((
+                "Found {} product species:\n\t{}"
+            ).format(len(products), ", ".join(products)))
+        return products
 
     def getnumactive(self):
         if self.numactive is None:

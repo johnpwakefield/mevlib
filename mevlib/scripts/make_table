@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 
+#TODO this is deprecated; remove it
+
+
 import os
 import pkgutil
 import argparse
@@ -63,7 +66,7 @@ def main():
                 "There are{} any undefined species that appear in reactions."
             ).format(undef))
         print("This reaction is{} reversible.".format(
-            "n't" if mech.reversible() else ""
+            "n't" if mech.isreversible() else ""
         ))
         mech.findnonreacting(True)
         mech.findproducts(True)

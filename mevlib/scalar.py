@@ -32,11 +32,11 @@ def sum_aitken(terms):
 def cyl_gn(a2, H, n):
     return np.sqrt(a2 + (np.pi * (2 * n + 1) / H)**2)
 
-def cyl_ln(a2, R, alphak):
+def cyl_lk(a2, R, alphak):
     return np.sqrt(a2 + (alphak / R)**2)
 
 def cyl_ptwise_radial_terms(a2, R, H, trunc, r, z):
-    ns = np.arange(trunc-1, -1, -1)
+    ns = np.arange(trunc)
     gns = cyl_gn(a2, H, ns)
     return (
         4.0 / (np.pi * (2 * ns + 1))
@@ -46,13 +46,19 @@ def cyl_ptwise_radial_terms(a2, R, H, trunc, r, z):
 
 def cyl_ptwise_axial_terms(a2, R, H, trunc, r, z, zero_cache=None):
     if zero_cache is not None and len(zero_cache) >= trunc:
-        alpha = zero_cache
+        alpha = zero_cache[:trunc]
     else:
         alpha = jn_zeros(0, trunc)
-    lks = cyl_ln(a2, R, alpha[::-1])
+    lks = cyl_lk(a2, R, alpha)
+#   TODO this doesn't work, but we get NaNs without it
+#   coshrat = np.where(
+#       np.cosh(lks * H / 2) < 1e50,
+#       np.cosh(lks * (z - H / 2)) / np.cosh(lks * H / 2),
+#       np.exp(lks * (z - H)) + np.exp(-lks * z)
+#   )
     return (
         2.0 * np.cosh(lks * (z - H / 2)) / np.cosh(lks * H / 2)
-        * j0(alpha[::-1] / R * r) / (j1(alpha[::-1]) * alpha[::-1])
+        * j0(alpha / R * r) / (j1(alpha) * alpha)
     )
 
 def cyl_ptwise_radial(a2, R, H, ntrunc, r, z):
@@ -88,8 +94,8 @@ def cyl_intgtd_axial_terms(a2, R, H, trunc, zero_cache=None):
         alpha = zero_cache
     else:
         alpha = jn_zeros(0, trunc)
-    lnks = cyl_ln(a2, R, alpha)
-    return 8.0 * np.tanh(lnks * H / 2) / (H * lnks * alpha**2)
+    lks = cyl_lk(a2, R, alpha)
+    return 8.0 * np.tanh(lks * H / 2) / (H * lks * alpha**2)
 
 #TODO functions like this might be confusing since they aren't used directly
 # in shapes.py

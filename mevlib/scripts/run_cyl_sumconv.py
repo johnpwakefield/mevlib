@@ -79,16 +79,16 @@ psm_axial_exact = psm_intgtd_xdir(a2, Lx, Ly, Lz, pexact)
 
 methods = [
     # name, valuefunction, exact, termadj, cost function, number of terms
-    (
-        "Cylinder - Radial - Standard",
-        lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
-        cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
-    ),
-    (
-        "Cylinder - Radial - Aitken",
-        lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
-        cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
-    ),
+#   (
+#       "Cylinder - Radial - Standard",
+#       lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
+#       cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
+#   ),
+#   (
+#       "Cylinder - Radial - Aitken",
+#       lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
+#       cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
+#   ),
     (
         "Cylinder - Axial - Standard",
         lambda tk: sum_standard(cyl_intgtd_axial_terms(a2, R, H, tk)),

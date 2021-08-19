@@ -32,7 +32,7 @@ def combinelines(limit, prespaces, lines):
     ])
 
 
-def f03(outfile, matrices, temperatures, verb=False):
+def write_mat_f03(outfile, spcsyms, temperatures, matrices, verb=False):
 
     setd  = r"this%d  = {}".format(matrices[0].shape[1])
     setad = r"this%ad = {}".format(matrices[0].shape[0])
@@ -69,7 +69,7 @@ def f03(outfile, matrices, temperatures, verb=False):
         f.write(program)
 
 
-def f90(outfile, matrices, temperatures, verb=False):
+def write_mat_f90(outfile, spcsyms, temperatures, matrices, verb=False):
 
     setd  = r"this%d  = {}".format(matrices[0].shape[1])
     setad = r"this%ad = {}".format(matrices[0].shape[0])
