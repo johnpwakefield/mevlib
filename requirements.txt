@@ -1,21 +1,26 @@
 
 
-#### wheel is not in the virtual environment, but is needed by pip (frustratingly) ####
+#### Installation Dependencies
+
+# Python standard library packages (e.g. pickle, pkgutil) are not included here.
+
+
+## wheel is not in the virtual environment, but is needed by pip (frustratingly) ##
 wheel
 
-#### standard requirements; most installations should have these ####
+## standard requirements; most installations should have these ##
 numpy ~= 1.19.5
 matplotlib ~= 3.1.1
-click
+click >= 7.0.0
 # should pyparsing be removed?
 pyparsing ~= 2.4.7
 scipy ~= 1.5.4
 
-#### only required for the nice progress bar ####
+## only required for the nice progress bar ##
 # this might be worth removing as computations are so fast
 tqdm ~= 4.36.1
 
-#### only required for the volrender scripts ####
+## only required for the volrender scripts ##
 plotly ~= 4.4.1
 
 

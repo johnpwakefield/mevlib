@@ -24,6 +24,7 @@ outfmts = {
     'mat': ('mat', None, write_mat_mat, None, None, None),
     'bin': ('dat', None, None, write_rate_bin, write_ints_bin, write_diag_bin),
     'pkl': ('pickle', None, write_mat_pkl, None, None, None)
+    #TODO add python module
 }
 
 
