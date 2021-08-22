@@ -48,6 +48,23 @@ Detailed Implementation Instructions
 
 
 
+
+Notes on Programming Style
+------------------------------------------
+
+Docstrings are a work in progress; reshuffling some code among modules may be
+required to make module groupings make more sense.
+
+All files in this project should adhere to PEP8 except:
+
+  - W391 (avoids confusion with W292 on different text editors)
+  - E306 (avoids awkward spacing and is better than violating E731)
+  - E302 and E305 (two lines are used to denote different logical groupings of
+    functions and classes)
+
+
+
+
 TODO
 ------------------------------------------
 
@@ -56,6 +73,10 @@ TODO
   - write better documentation / tutorial
   - verify license decision with collaborators
   - add authorship page
+  - add tests (pytest/tox, use pytest-cov)
+  - add and sign versions
+  - docstrings
+  - add travis CI for pull requests
   - implement full test
         series -> fortran lookup tables -> fortran compiled
         -> call from python -> compare to other method
@@ -67,6 +88,7 @@ TODO
   - many scripts should maybe be "examples"
   - the scripts.py file referenced by scripts is kinda wonky
   - move unit tests out of package directory and use unittests module for these
+  - make sure this file obeys rst syntax, add a picture
 
 
 
