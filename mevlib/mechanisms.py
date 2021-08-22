@@ -79,7 +79,8 @@ class ArrheniusReaction(Reaction):
     def kij(self, T):
         A = self.A
         if self.b is not None and self.b != 0.0:
-            #TODO we need to be more carful about this; this only works if A is primitive
+            # TODO we need to be more carful about this; this only works if A
+            # is primitive
             A *= T**self.b
         if self.T0 is None or self.T0 == inf or self.T0 == -inf:
             T0inv = 0.0
@@ -187,10 +188,10 @@ class Mechanism(object):
     def getmatrix(self, T):
         kijs, Dis = self.getkijs(T), self.getDis(T)
         consumption = np.diag(np.sum(
-            kijs / np.tile(Dis.reshape((-1,1)), len(self.spcs)),
+            kijs / np.tile(Dis.reshape((-1, 1)), len(self.spcs)),
             axis=1
         ))
-        production = kijs.T / np.tile(Dis.reshape((-1,1)), len(self.spcs))
+        production = kijs.T / np.tile(Dis.reshape((-1, 1)), len(self.spcs))
         B = consumption - production  # yes, this is a bad sign convention
         return B
 

@@ -13,7 +13,7 @@ class SBLParsingException(Exception):
     pass
 
 
-def parse_sensible(f, verb=False, allow_partial=True):
+def parse_sensible(f, verb=False):
     # building blocks
     def keylist(ls):
         return reduce(lambda x, y: x | y, map(pp.CaselessKeyword, ls))
@@ -90,17 +90,9 @@ def parse_sensible(f, verb=False, allow_partial=True):
         for h, u in parser.parseFile(f).asList()
     }
 
-    # make sure we have the key sections
-    if not allow_partial:
-        for sec in req_sections:
-            if sec not in d.keys():
-                raise SBLParsingException(
-                    "Could not parse required section '{}'.".format(sec)
-                )
-
     # read series truncation or error tolerance
     if 'precision' in d:
-        if allow_partial and verb:
+        if verb:
             print("Found section '{}'.".format('precision'))
         precision = d['precision']
         if 'type' not in d['precision']:
@@ -130,7 +122,7 @@ def parse_sensible(f, verb=False, allow_partial=True):
 
     # read shape
     if 'shape' in d:
-        if allow_partial and verb:
+        if verb:
             print("Found section '{}'.".format('shape'))
         if 'type' not in d['shape']:
             print("Shape type not specified.")
@@ -165,7 +157,7 @@ def parse_sensible(f, verb=False, allow_partial=True):
 
     # read temperature ranges
     if 'temperature' in d:
-        if allow_partial and verb:
+        if verb:
             print("Found section '{}'.".format('temperature'))
         if 'type' not in d['temperature']:
             print("Type of temperature specification not present.")
@@ -188,12 +180,12 @@ def parse_sensible(f, verb=False, allow_partial=True):
             if 'num' in d['temperature'] and 'step' in d['temperature']:
                 print("Only one of 'num' or 'step' may be specified.")
                 raise SBLParsingException("Range parameters overspecified.")
-            l = d['temperature']['stop'] - d['temperature']['start']
+            s = d['temperature']['stop'] - d['temperature']['start']
             if 'num' in d['temperature']:
                 num = d['temperature']['num']
             else:
-                num = floor(l / d['temperature']['step'])
-            step = l / (num - 1)
+                num = floor(s / d['temperature']['step'])
+            step = s / (num - 1)
             temperatures = [
                 d['temperature']['start'] + i * step for i in range(num)
             ]
@@ -209,7 +201,7 @@ def parse_sensible(f, verb=False, allow_partial=True):
 
     # read diffusion parameters
     if 'diffusion' in d:
-        if allow_partial and verb:
+        if verb:
             print("Found section '{}'.".format('diffusion'))
         if d['diffusion']['type'] == 'knudsen':
             knudsenparams = ['porediameter', 'voidage', 'tortuosity']
@@ -228,7 +220,7 @@ def parse_sensible(f, verb=False, allow_partial=True):
 
     # make species list
     if 'species' in d:
-        if allow_partial and verb:
+        if verb:
             print("Found section '{}'.".format('species'))
         if 'table' not in d['species']:
             raise SBLParsingException("Missing species table.")
@@ -244,11 +236,14 @@ def parse_sensible(f, verb=False, allow_partial=True):
                 != (1 + (name == 'specified') + (molweight == 'specified'))
             ):
                 print("Unexpected length of table row.")
-                print("Expected {} columns: {}.".format(", ".join(
+                expected_syms = [
                     ['symbol']
                     + (['name'] if name == 'specified' else [])
                     + (['molweight'] if molweight == 'specified' else [])
-                )))
+                ]
+                print("Expected {} columns: {}.".format(
+                    len(expected_syms), ", ".join(expected_syms)
+                ))
                 raise SBLParsingException("Unexpected length of table row.")
         def getname(row):
             if name == 'omitted':
@@ -259,8 +254,8 @@ def parse_sensible(f, verb=False, allow_partial=True):
                 if verb:
                     print((
                         "Using chemical name '{}' for all species; this was "
-                        "likely unintended. Try using 'DEFAULT', 'OMITTED', or "
-                        "'SPECIFIED'. "
+                        "likely unintended. Try using 'DEFAULT', 'OMITTED', "
+                        "or 'SPECIFIED'. "
                     ).format(name))
                 return name
         def getmolweight(row):

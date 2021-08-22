@@ -5,7 +5,7 @@ import setuptools
 
 
 setuptools.setup(
-    name="MEVLIB",
+    name="mevlib",
     version="0.1",
     author="John P Wakefield et al",
     author_email="jwake@umich.edu",

@@ -48,11 +48,11 @@ Hs = ratios * Rs
 plotdata_single = np.empty((len(phi2s), len(Hs)))
 for k, phi2 in enumerate(phi2s):
     for i, (R, H) in enumerate(zip(Rs, Hs)):
-        plotdata_single[k,i] = S(np.sqrt(phi2), R, H)
+        plotdata_single[k, i] = S(np.sqrt(phi2), R, H)
 fig3, ax3 = plt.subplots(1, 1)
 lines = [
         ax3.semilogx(
-            Hs / Rs, plotdata_single[k,:],
+            Hs / Rs, plotdata_single[k, :],
             'C{}-'.format(k+1), label=r"\( a^2 = {} \)".format(phi2)
             )
         for k, phi2 in enumerate(phi2s)

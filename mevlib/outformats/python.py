@@ -3,7 +3,7 @@
 from pickle import dump
 
 
-#TODO should really be an `all' since the pickle format is pretty flexible
+# TODO should really be an `all' since the pickle format is pretty flexible
 
 def write_mat_pkl(outfile, spcsyms, temperatures, matrices, verb=False):
     print("Generating a pickle file for use with 'mevlookup.py'...")

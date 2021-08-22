@@ -1,6 +1,6 @@
 
 
-#TODO it would be better if all the math was migrated to diagonalization
+# TODO it would be better if all the math was migrated to diagonalization
 import numpy as np
 import scipy.linalg as la
 
@@ -11,10 +11,12 @@ from mevlib.diagonalization import computediagonalization, computeintegral
 from mevlib.parsing.auto import parse_dynamic
 
 from mevlib.outformats.fortran import write_mat_f03, write_mat_f90
-#TODO add mat and mex
+# TODO add mat and mex
 from mevlib.outformats.matlab import write_mat_mat
 from mevlib.outformats.python import write_mat_pkl
-from mevlib.outformats.binary import write_rate_bin, write_diag_bin, write_ints_bin
+from mevlib.outformats.binary import write_rate_bin
+from mevlib.outformats.binary import write_diag_bin
+from mevlib.outformats.binary import write_ints_bin
 
 
 # extension, all, mevs, rates, ints, diag
@@ -24,11 +26,12 @@ outfmts = {
     'mat': ('mat', None, write_mat_mat, None, None, None),
     'bin': ('dat', None, None, write_rate_bin, write_ints_bin, write_diag_bin),
     'pkl': ('pickle', None, write_mat_pkl, None, None, None)
-    #TODO add python module
+    # TODO add python module
 }
 
 
-# there are three things we might want to write here: effectiveness factors, diagonalizations, or rate matrices
+# there are three things we might want to write here: effectiveness factors,
+# diagonalizations, or rate matrices
 
 
 class OutputFormatError(Exception):
@@ -37,7 +40,9 @@ class OutputFormatError(Exception):
 
 def parse_file(infile, verb=True):
 
-    precision, shape, temperatures, species, reactions = parse_dynamic(infile, verb)
+    (
+        precision, shape, temperatures, species, reactions
+    ) = parse_dynamic(infile, verb)
     mech = Mechanism(species, reactions)
 
     if verb:
@@ -141,8 +146,10 @@ def compute_augmenteddiag(spcs, Ts, Rs, Rinvs, ndlen=1.0, verb=True):
 
 
 def make_table(
-        src, fmt, writeall, writeint, writediag, writemev, writeaugd, writerate, verb
-        ):
+    src, fmt,
+    writeall, writeint, writediag, writemev, writeaugd, writerate,
+    verb
+):
 
     if fmt in outfmts.keys():
         ext, allf, mevsf, ratesf, intsf, diagf = outfmts[fmt]
@@ -152,11 +159,13 @@ def make_table(
     if writeall:
         if allf is None:
             writeall = False
-            writeint, writediag, writemev, writeaugd, writerate = True, True, True, True
+            (
+                writeint, writediag, writemev, writeaugd, writerate
+            ) = True, True, True, True
 
     precision, shape, Ts, mech = parse_file(src, verb=verb)
 
-    #TODO allow a lambda range as inputs for lambda only output
+    # TODO allow a lambda range as inputs for lambda only output
     lambdas, Rs = compute_diag(Ts, mech, verb=verb)
     if writeint or writemev or writerate or writeaugd:
         ints = compute_integrals(lambdas, shape, precision, verb=verb)
@@ -178,13 +187,20 @@ def make_table(
 
     if writeint:
         if intsf is not None:
-            intsf("mevtable_ints."+ext, *sort_integrals(lambdas, ints, verb=verb), verb=verb)
+            intsf(
+                "mevtable_ints."+ext,
+                *sort_integrals(lambdas, ints, verb=verb),
+                verb=verb
+            )
         else:
             print("Method 'ints' not available for this format.")
 
     if writediag:
         if diagf is not None:
-            diagf("mevtable_diag."+ext, syms, Ts, lambdas, Rs, Rinvs, verb=verb)
+            diagf(
+                "mevtable_diag."+ext, syms, Ts, lambdas, Rs, Rinvs,
+                verb=verb
+            )
         else:
             print("Method 'diag' not available for this format.")
 
@@ -200,7 +216,7 @@ def make_table(
         else:
             print("Method 'augd' not available for this format.")
 
-    #TODO why don't we have the same checking here?
+    # TODO why don't we have the same checking here?
     if writerate:
         ratesf("mevtable_rates."+ext, syms, Ts, Bs, verb=verb)
 

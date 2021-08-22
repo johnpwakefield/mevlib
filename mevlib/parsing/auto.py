@@ -16,9 +16,8 @@ def parse_ini(fn):
     raise NotImplementedError("Ini parser not written.")
 
 file_types = {
-#   '.inp'  : ("Chemkin-II", parse_chemkin),
-#   '.ini'  : ("ini", parse_ini),
-    '.sbl'  : ("sensible", parse_sensible)
+    # TODO add '.ini'  : ("ini", parse_ini),
+    '.sbl': ("sensible", parse_sensible)
 }
 
 def parse_attempt(f, ext, verb, allow_partial):

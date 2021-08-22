@@ -2,7 +2,6 @@
 
 from abc import ABC
 
-#import numpy as np
 from scipy.special import jn_zeros
 from mevlib.scalar import sum_standard
 from mevlib.scalar import sph_ptwise, sph_intgtd

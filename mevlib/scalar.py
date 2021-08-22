@@ -83,7 +83,7 @@ def cyl_intgtd_radial_terms(a2, R, H, trunc, bratcutoff=None):
     ns = np.arange(trunc)
     gns = cyl_gn(a2, H, ns)
     # the ratio I1/I0 tends to 1 (inf/inf) very quickly
-    #TODO instead of computing then checking, just compute what is needed
+    # TODO instead of computing then checking, just compute what is needed
     brat = i1e(gns * R) / i0e(gns * R)
     if bratcutoff is not None:
         brat = np.where(gns * R < bratcutoff, brat, 1.0)
@@ -97,7 +97,7 @@ def cyl_intgtd_axial_terms(a2, R, H, trunc, zero_cache=None):
     lks = cyl_lk(a2, R, alpha)
     return 8.0 * np.tanh(lks * H / 2) / (H * lks * alpha**2)
 
-#TODO functions like this might be confusing since they aren't used directly
+# TODO functions like this might be confusing since they aren't used directly
 # in shapes.py
 def cyl_intgtd(a2, R, H, ntrunc, ktrunc, bratcutoff=None, zero_cache=None):
     return sum(map(sum_standard, [
@@ -122,7 +122,7 @@ def psm_ptwise_xdir(a2, Lx, Ly, Lz, trunc, x, y, z):
         np.sin(np.pi * (2 * ms + 1) * y / Ly) *
         np.sin(np.pi * (2 * ns + 1) * z / Lz) *
         (
-            #TODO add truncation for large values
+            # TODO add truncation for large values
             np.cosh(betas * (x / Lx - 0.5)) / np.cosh(betas * 0.5)
         ) / ((2 * ms + 1) * (2 * ns + 1))
     )
@@ -148,8 +148,8 @@ def psm_intgtd_xdir(a2, Lx, Ly, Lz, trunc):
             else:
                 i, j = trunc - 1 - k, dg - trunc + 1 + k
             cml += (
-                np.tanh(betas[i,j] * 0.5) /
-                (betas[i,j] * (2 * ms[i,j] + 1)**2 * (2 * ns[i,j] + 1)**2)
+                np.tanh(betas[i, j] * 0.5) /
+                (betas[i, j] * (2 * ms[i, j] + 1)**2 * (2 * ns[i, j] + 1)**2)
             )
     return 32.0 / np.pi**4 * cml
 #   return 32.0 / np.pi**4 * np.sum(
@@ -260,31 +260,31 @@ def psm_diff_coeffs(a2, Lx, Ly, Lz, truncs):
         for n in range(Ny):
             for p in range(Nz):
                 row = np.zeros((Nx, Ny, Nz))
-                row[m,n,p] = -2.0 * (hx**-2 + hy**-2 + hz**-2 + a2 / 2)
+                row[m, n, p] = -2.0 * (hx**-2 + hy**-2 + hz**-2 + a2 / 2)
                 if m + 1 != Nx:
-                    row[m+1,n,p] = hx**-2
+                    row[m+1, n, p] = hx**-2
                 else:
-                    rhs[m,n,p] = -hx**-2
+                    rhs[m, n, p] = -hx**-2
                 if m != 0:
-                    row[m-1,n,p] = hx**-2
+                    row[m-1, n, p] = hx**-2
                 else:
-                    rhs[m,n,p] = -hx**-2
+                    rhs[m, n, p] = -hx**-2
                 if n + 1 != Ny:
-                    row[m,n+1,p] = hy**-2
+                    row[m, n+1, p] = hy**-2
                 else:
-                    rhs[m,n,p] = -hy**-2
+                    rhs[m, n, p] = -hy**-2
                 if n != 0:
-                    row[m,n-1,p] = hy**-2
+                    row[m, n-1, p] = hy**-2
                 else:
-                    rhs[m,n,p] = -hy**-2
+                    rhs[m, n, p] = -hy**-2
                 if p + 1 != Nz:
-                    row[m,n,p+1] = hz**-2
+                    row[m, n, p+1] = hz**-2
                 else:
-                    rhs[m,n,p] = -hz**-2
+                    rhs[m, n, p] = -hz**-2
                 if p != 0:
-                    row[m,n,p-1] = hz**-2
+                    row[m, n, p-1] = hz**-2
                 else:
-                    rhs[m,n,p] = -hz**-2
+                    rhs[m, n, p] = -hz**-2
                 A[np.ravel_multi_index((m, n, p), (Nx, Ny, Nz)), :] = (
                     row.flatten()
                 )
