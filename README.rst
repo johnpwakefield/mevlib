@@ -13,31 +13,16 @@ Multistep Effectiveness Factor Lookup Library
 
 
 
-Getting Started
+Installation
 ------------------------------------------
 
-There are five steps required to integrate <libname> into your existing code:
-
- 1. Generate a data file containing precomputed values throughout the
-    temperature range using `mevtable <infile> <outfile>`.
-
- 2. Compile `mevlookup.f90` through your own build process (or build
-    `mevlookup.mod` using the included makefile).
-
- 3. Initialize the `efactors` object.  (Because object orientation in FORTRAN
-    is patchy, the constructor `efactors%build` will need to be evoked
-    explicitly.)
-
- 4. Call `efactors%getmev` to obtain a multistage effectiveness vector at the
-    local temperature and free stream concentration.
-
- 5. Call `efactors%destroy` to deallocate the memory claimed by
-    `efactors%build`.
-
-
-If you are using <list of some libs>, then all you have to do is turn it on.
-
-<list of libs and info on configurations>
+Because the intended audience of this package is small, it is unlikely we will
+add it to a repository like PyPi.  This package may either be used in a virtual
+environment (recommended) or installed.  For the former, a script has been
+included to do this for you (assuming standard packages like venv and pip3 are
+already installed); simply run `source activate_venv.sh`.  The latter can be
+done for a user-specific (PEP370) install `pip3 install path/to/mevlib` or a
+system-wide install `sudo -H pip3 install path/to/mevlib`.
 
 
 
@@ -45,16 +30,6 @@ If you are using <list of some libs>, then all you have to do is turn it on.
 
 
 
-Developing with MEVLib
-------------------------------------------
-
-
-from the project directory:
-python3 -m venv virtualenv
-source ./virtualenv/bin/activate
-python3 setup.py develop
-# do stuff
-deactivate
 
 
 
