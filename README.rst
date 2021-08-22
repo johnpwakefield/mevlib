@@ -1,6 +1,10 @@
 
+
+![MEVlib Logo](http://websites.umich.edu/~jwake/github_assets/mevlogo.png)
+
+
 Multistep Effectiveness Factor Lookup Library
-==========================================
+==============================================================================
 
 
 <add authors, funding acknowledgement, etc>
