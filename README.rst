@@ -1,17 +1,12 @@
 
 
-![MEVlib Logo](http://websites.umich.edu/~jwake/github_assets/mevlogo.png)
+.. image:: http://websites.umich.edu/~jwake/github_assets/mevlogo.png
+    :alt: MEVlib Logo
 
 
 Multistep Effectiveness Factor Lookup Library
 ==============================================================================
 
-
-<add authors, funding acknowledgement, etc>
-
-
-
-<todooverview>
 
 
 
@@ -29,21 +24,40 @@ done for a user-specific (PEP370) install `pip3 install path/to/mevlib` or a
 system-wide install `sudo -H pip3 install path/to/mevlib`.
 
 
-
-
-
-
-
-
-
-
-
-
-
-Detailed Implementation Instructions
+Integration into CFD Packages
 ------------------------------------------
 
 
+
+
+
+
+
+
+File Formats
+------------------------------------------
+
+
+
+
+Binary Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+
+.mat and Pickle Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+
+
+
+Modules
+------------------------------------------
 
 
 
@@ -76,23 +90,32 @@ TODO
   - add other shapes to volrenders
   - write better documentation / tutorial
   - verify license decision with collaborators
-  - add authorship page
   - add tests (pytest/tox, use pytest-cov)
   - add and sign versions
   - docstrings
   - add travis CI for pull requests
-  - implement full test
+  - clean up full test
         series -> fortran lookup tables -> fortran compiled
         -> call from python -> compare to other method
-  - it is possible several of the files in this directory should be in the
-    package directory; determine if this is the case and fix accordingly
   - several of the scripts in "scripts" are actually tests, make these into
     tests and move them into the tests directory
-  - scripts should have a function as an entry point
+  - scripts should have a function as an entry point (maybe?)
   - many scripts should maybe be "examples"
-  - the scripts.py file referenced by scripts is kinda wonky
+  - the options.py file referenced by scripts is kinda wonky
   - move unit tests out of package directory and use unittests module for these
-  - make sure this file obeys rst syntax, add a picture
+  - make sure this file obeys rst syntax
 
 
+Attribution
+------------------------------------------
+
+This library/tool was written by John Wakefield (jwake@umich.edu) in
+collaboration with Aaron Lattanzi, Brennan Pecha, Peter Ciesielski, and Jesse
+Capacelatro.
+
+For imformation on citing this paper contact jwake@umich.edu.
+
+This software package was developed based upon funding from the Alliance for
+Sustainable Energy, LLC, Managing and Operating Contractor for the National
+Renewable Energy Laboratory for the U.S.  Department of Energy.
 

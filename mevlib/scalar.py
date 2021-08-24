@@ -8,6 +8,7 @@ problem for a variety of shapes.
 import numpy as np
 from scipy.special import j0, j1, i0e, i1e, jn_zeros
 from scipy.linalg import solve
+from scipy.sparse import diags
 from scipy.sparse.linalg import gmres, spsolve
 from scipy.sparse import dok_matrix as spmat
 from scipy.interpolate import RegularGridInterpolator as RGI
@@ -106,7 +107,38 @@ def cyl_intgtd(a2, R, H, ntrunc, ktrunc, bratcutoff=None, zero_cache=None):
     ]))
 
 
+# rectangle functions
+
+def rct_ptwise_diff(a2, Lx, Ly, M, N):
+    h, k = Lx / (M + 1), Ly / (N + 1)
+    m = 2.0 * (h**2 + k**2) * np.ones((M, N)) + a2 * h**2 * k**2
+    l, r = - 1.0 * k**2 * np.ones((M, N)), - 1.0 * k**2 * np.ones((M, N))
+    d, u = - 1.0 * h**2 * np.ones((M, N)), - 1.0 * h**2 * np.ones((M, N))
+    b = np.zeros((M, N))
+    b[:, 0] -= l[:, 0]
+    b[:, -1] -= r[:, -1]
+    b[0, :] -= d[0, :]
+    b[-1, :] -= d[0, :]
+    l[:, 0], r[:, -1], d[0, :], u[-1, :] = 0.0, 0.0, 0.0, 0.0
+    assert(np.all(d.flatten()[:N] == 0.0))
+    assert(np.all(l.flatten()[:1] == 0.0))
+    assert(np.all(r.flatten()[-1:] == 0.0))
+    assert(np.all(u.flatten()[-N:] == 0.0))
+    A = diags((
+        d.flatten()[N:],
+        l.flatten()[1:],
+        m.flatten(),
+        r.flatten()[:-1],
+        u.flatten()[:-N]
+    ), (-N, -1, 0, 1, N))
+    b = b.flatten()
+    x = spsolve(A, b)
+    return x.reshape(M, N).T
+
+
 # prism functions
+
+#TODO fix up the pseudospectral and finite difference methods below
 
 def psm_beta(a2, L1, L2, L3, ms, ns):
     return np.sqrt(
@@ -246,6 +278,46 @@ def psm_diff_axes(Lx, Ly, Lz, Nx, Ny, Nz):
     )
     return xs, ys, zs
 
+def psm_ptwise_diff2(a2, Lx, Ly, Lz, M, N, P):
+    h, k, l = Lx / (M + 1), Ly / (N + 1), Lz / (P + 1)
+    m = (
+        2.0 * (h**2 + k**2 + l**2) * np.ones((M, N, P))
+        + a2 * h**2 * k**2 * l**2
+    )
+    # Left Right bAck Front Down Up
+    l, r = - 1.0 * l**2 * np.ones((M, N, P)), - 1.0 * l**2 * np.ones((M, N, P))
+    a, f = - 1.0 * k**2 * np.ones((M, N, P)), - 1.0 * k**2 * np.ones((M, N, P))
+    d, u = - 1.0 * h**2 * np.ones((M, N, P)), - 1.0 * h**2 * np.ones((M, N, P))
+    b = np.zeros((M, N, P))
+    b[:, :, +0] -= l[:, :, +0]
+    b[:, :, -1] -= r[:, :, -1]
+    b[:, +0, :] -= a[:, +0, :]
+    b[:, -1, :] -= f[:, -1, :]
+    b[+0, :, :] -= d[+0, :, :]
+    b[-1, :, :] -= u[-1, :, :]
+    l[:, :, +0], r[:, :, -1] = 0.0, 0.0
+    a[:, +0, :], f[:, -1, :] = 0.0, 0.0
+    d[+0, :, :], u[-1, :, :] = 0.0, 0.0
+    assert(np.all(d.flatten()[:N*P] == 0.0))
+    assert(np.all(a.flatten()[:P] == 0.0))
+    assert(np.all(l.flatten()[:1] == 0.0))
+    assert(np.all(r.flatten()[-1:] == 0.0))
+    assert(np.all(f.flatten()[-P:] == 0.0))
+    assert(np.all(u.flatten()[-N*P:] == 0.0))
+    A = diags((
+        d.flatten()[N*P:],
+        a.flatten()[P:],
+        l.flatten()[1:],
+        m.flatten(),
+        r.flatten()[:-1],
+        f.flatten()[:-P],
+        u.flatten()[:-N*P]
+    ), (-N*P, -P, -1, 0, 1, P, N*P))
+    b = b.flatten()
+    x = spsolve(A, b)
+    return x.reshape(M, N, P).T
+
+# TODO modify this to look a lot more like rct_diff
 def psm_diff_coeffs(a2, Lx, Ly, Lz, truncs):
     if np.isscalar(truncs):
         truncs = truncs, truncs, truncs

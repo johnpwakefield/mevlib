@@ -15,7 +15,7 @@ __pycache__
 *.dat
 
 # virtual environment directories
-MEVLIB.egg-info
+mevlib.egg-info
 virtualenv
 
 
