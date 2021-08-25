@@ -1,6 +1,6 @@
 
 
-.. image:: http://websites.umich.edu/~jwake/github_assets/mevlogo.png
+.. image:: http://umich.edu/~jwake/github_assets/mevlogo.png
     :alt: MEVlib Logo
     :align: right
 
