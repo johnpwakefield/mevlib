@@ -2,6 +2,7 @@
 
 .. image:: http://websites.umich.edu/~jwake/github_assets/mevlogo.png
     :alt: MEVlib Logo
+    :align: right
 
 
 Multistep Effectiveness Factor Lookup Library
@@ -19,9 +20,9 @@ Because the intended audience of this package is small, it is unlikely we will
 add it to a repository like PyPi.  This package may either be used in a virtual
 environment (recommended) or installed.  For the former, a script has been
 included to do this for you (assuming standard packages like venv and pip3 are
-already installed); simply run `source activate_venv.sh`.  The latter can be
-done for a user-specific (PEP370) install `pip3 install path/to/mevlib` or a
-system-wide install `sudo -H pip3 install path/to/mevlib`.
+already installed); simply run ``source activate_venv.sh``.  The latter can be
+done for a user-specific (PEP370) install ``pip3 install path/to/mevlib`` or a
+system-wide install ``sudo -H pip3 install path/to/mevlib``.
 
 
 Integration into CFD Packages
@@ -43,8 +44,79 @@ File Formats
 Binary Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+All numbers are little-endian.
+
+For ``ints`` files:
+
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Magic Number                      | 6 bytes             | ``0xe288ab756456`` | literal              |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Array Ordering                    | 1 byte              | 'F' or 'C' (ascii) | only 'F' implemented |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Version & 1 byte                  | integer             |                    | only ``0x01`` so far |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Number of Temperatures :math:`m`  | 4 bytes             | integer            |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`m` times  | Temperature                       | 8 bytes             | double             |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`m` times  | Single-Step Effectiveness Factors | :math:`8 n` bytes   | doubles            |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+
+For ``diag`` and ``augd`` files:
+
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Magic Number                      | 6 bytes             | ``0x42523d52ce9b`` | literal              |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Array Ordering                    | 1 byte              | 'F' or 'C' (ascii) | only 'F' implemented |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Version & 1 byte                  | integer             |                    | only ``0x01`` so far |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Number of Species :math:`n`       | 4 bytes             | integer            |                      |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Size of Lookup Table :math:`m`    | 4 bytes             | integer            |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`n` times  | Species Symbol Length :math:`l_n` | 1 byte  & integer   |                    |                      |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Species Identifier                | :math:`l_n` bytes   | ascii              |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`m` times  | Temperature                       | 8 bytes             | double             |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`m` times  | Eigenvalues                       | :math:`8 n` bytes   | doubles            |                      |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Left Matrix :math:`F`             | :math:`8 n^2` bytes | doubles            | fortran order        |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Right Matrix :math:`G`            | :math:`8 n^2` bytes | doubles            | fortran order        |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
 
 
+
+
+#TODO mev format
+
+
+
+
+For ``rate`` files:
+
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Magic Number                      | 6 bytes             | ``0x3ccf89cc873e`` | literal              |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Array Ordering                    | 1 byte              | 'F' or 'C' (ascii) | only 'F' implemented |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Version & 1 byte                  | integer             |                    | only ``0x01`` so far |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Number of Species :math:`n`       | 4 bytes             | integer            |                      |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Size of Lookup Table :math:`m`    | 4 bytes             | integer            |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`n` times  | Species Symbol Length :math:`l_n` | 1 byte  & integer   |                    |                      |
+|                         +-----------------------------------+---------------------+--------------------+----------------------+
+|                         | Species Identifier                | :math:`l_n` bytes   | ascii              |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`m` times  | Temperature                       | 8 bytes             | double             |                      |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
+| Repeat :math:`m` times  | Rate Matrix :math:`E`             | :math:`8 n^2` bytes | doubles            | fortran order        |
++-------------------------+-----------------------------------+---------------------+--------------------+----------------------+
 
 
 .mat and Pickle Files
@@ -64,6 +136,14 @@ Modules
 
 
 
+
+Note on Naming of the MEVlib Package
+------------------------------------------
+
+When referred to as a Python package `mevlib` is written in all lowercase to be
+consistent with Python conventions.  As a project it is referred to as MEVlib.
+For example, 'Effectiveness factors were computed with MEVlib.' and 'The mevlib
+package is not available on PyPi.' are both correct.
 
 
 
