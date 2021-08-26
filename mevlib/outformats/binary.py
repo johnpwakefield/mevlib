@@ -25,7 +25,7 @@ def symlist_fixedlen(syms, s=8):
 
 # note that np.tofile saves in C order regardless of ordering in memory
 
-def write_rate_bin(outfile, spcsyms, temperatures, ratemats, verb=False):
+def w_rte_bin(outfile, spcsyms, temperatures, ratemats, verb=False):
 
     m, (n, _) = len(temperatures), ratemats[0].shape
 
@@ -43,7 +43,7 @@ def write_rate_bin(outfile, spcsyms, temperatures, ratemats, verb=False):
         datamat.T.tofile(f)
 
 
-def write_diag_bin(
+def w_dia_bin(
     outfile, spcsyms, temperatures, lambdas, Rs, Rinvs, verb=False
 ):
 
@@ -65,7 +65,7 @@ def write_diag_bin(
         datamat.T.tofile(f)
 
 
-def write_ints_bin(outfile, lambdas, ints, verb=False):
+def w_int_bin(outfile, lambdas, ints, verb=False):
 
     with open(outfile, 'wb') as f:
         f.write(mgn_ints)

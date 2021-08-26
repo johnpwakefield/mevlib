@@ -1,5 +1,7 @@
 
 
+import sys
+
 # TODO it would be better if all the math was migrated to diagonalization
 import numpy as np
 import scipy.linalg as la
@@ -10,22 +12,19 @@ from mevlib.mechanisms import Mechanism
 from mevlib.diagonalization import computediagonalization, computeintegral
 from mevlib.parsing.auto import parse_dynamic
 
-from mevlib.outformats.fortran import write_mat_f03, write_mat_f90
-# TODO add mat and mex
-from mevlib.outformats.matlab import write_mat_mat
-from mevlib.outformats.python import write_mat_pkl
-from mevlib.outformats.binary import write_rate_bin
-from mevlib.outformats.binary import write_diag_bin
-from mevlib.outformats.binary import write_ints_bin
+from mevlib.outformats.fortran import w_mat_f03, w_mat_f90
+from mevlib.outformats.matlab import w_mat_mat, w_int_mat, w_dia_mat
+from mevlib.outformats.python import w_mat_pkl
+from mevlib.outformats.binary import w_rte_bin, w_dia_bin, w_int_bin
 
 
-# extension, all, mevs, rates, ints, diag
+# extension, mevs, rates, ints, diag, augd
 outfmts = {
-    'f03': ('f03', None, write_mat_f03, write_mat_f03, None, None),
-    'f90': ('f90', None, write_mat_f90, write_mat_f90, None, None),
-    'mat': ('mat', None, write_mat_mat, None, None, None),
-    'bin': ('dat', None, None, write_rate_bin, write_ints_bin, write_diag_bin),
-    'pkl': ('pickle', None, write_mat_pkl, None, None, None)
+    'f03': ('f03', w_mat_f03, w_mat_f03, None,      None,      None),
+    'f90': ('f90', w_mat_f90, w_mat_f90, None,      None,      None),
+    'mat': ('mat', w_mat_mat, w_mat_mat, w_int_mat, w_dia_mat, w_dia_mat),
+    'bin': ('dat', None,      w_rte_bin, w_int_bin, w_dia_bin, w_dia_bin),
+    'pkl': ('pkl', w_mat_pkl, None,      None,      None,      None)
     # TODO add python module
 }
 
@@ -145,23 +144,34 @@ def compute_augmenteddiag(spcs, Ts, Rs, Rinvs, ndlen=1.0, verb=True):
     return Es, Rinvs
 
 
+def lookup_outputformat(fmt, verb=False):
+
+    if fmt in outfmts.keys():
+        if verb:
+            print("Using output format '{}'.".format(fmt))
+        return outfmts[fmt]
+    else:
+        raise OutputFormatError("Unknown output format '{}'.".format(fmt))
+
+
 def make_table(
     src, fmt,
     writeall, writeint, writediag, writemev, writeaugd, writerate,
     verb
 ):
 
-    if fmt in outfmts.keys():
-        ext, allf, mevsf, ratesf, intsf, diagf = outfmts[fmt]
-    else:
-        raise OutputFormatError("Unknown output format '{}'.".format(fmt))
+    ext, mevsf, ratesf, intsf, diagf, augdf = lookup_outputformat(fmt)
+
+    if not any([
+        writeall, writeint, writediag, writemev, writeaugd, writerate
+    ]):
+        print("No output data specified; exiting...")
+        sys.exit(0)
 
     if writeall:
-        if allf is None:
-            writeall = False
-            (
-                writeint, writediag, writemev, writeaugd, writerate
-            ) = True, True, True, True
+        (
+            writeint, writediag, writemev, writeaugd, writerate
+        ) = True, True, True, True, True
 
     precision, shape, Ts, mech = parse_file(src, verb=verb)
 
@@ -179,11 +189,17 @@ def make_table(
         augd = compute_augmenteddiag(mech.spcs, Ts, Rs, Rinvs, verb=verb)
     syms = [spc.symb for spc in mech.spcs]
 
-    if writeall:
-        if allf is not None:
-            allf("mevtable_all."+ext, syms, Ts, Bs, verb=verb)
+    if writemev:
+        if mevsf is not None:
+            mevsf("mevtable_mevs."+ext, syms, Ts, As, verb=verb)
         else:
-            print("Method 'all' not available for this format.")
+            print("Method 'mevs' not available for this format.")
+
+    if writerate:
+        if ratesf is not None:
+            ratesf("mevtable_rates."+ext, syms, Ts, Bs, verb=verb)
+        else:
+            print("Method 'rate' not available for this format.")
 
     if writeint:
         if intsf is not None:
@@ -204,20 +220,12 @@ def make_table(
         else:
             print("Method 'diag' not available for this format.")
 
-    if writemev:
-        if mevsf is not None:
-            mevsf("mevtable_mevs."+ext, syms, Ts, As, verb=verb)
-        else:
-            print("Method 'mevs' not available for this format.")
-
     if writeaugd:
-        if augd is not None:
-            diagf("mevtable_augd."+ext, syms, Ts, lambdas, *augd, verb=verb)
+        if augdf is not None:
+            augdf("mevtable_augd."+ext, syms, Ts, lambdas, *augd, verb=verb)
         else:
             print("Method 'augd' not available for this format.")
 
-    # TODO why don't we have the same checking here?
-    if writerate:
-        ratesf("mevtable_rates."+ext, syms, Ts, Bs, verb=verb)
+    sys.exit(0)
 
 

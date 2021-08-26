@@ -25,6 +25,21 @@ done for a user-specific (PEP370) install ``pip3 install path/to/mevlib`` or a
 system-wide install ``sudo -H pip3 install path/to/mevlib``.
 
 
+Usage Example
+------------------------------------------
+
+To generate a Matlab lookup tables::
+
+    ~ $ source activate_venv.sh
+
+    ~ $ cd examples/
+
+    ~ $ mevtable --rates example_file.sbl mat
+
+After doing so one will find ``mevtable_rates.mat`` in the current working
+directory containing lookup table data.
+
+
 Integration into CFD Packages
 ------------------------------------------
 
@@ -34,8 +49,17 @@ Integration into CFD Packages
 
 
 
+Input File Formats
+------------------------------------------
 
-File Formats
+At present only one input file format is supported.  An example is provided in
+``examples/example_file.sbl``.
+
+
+
+
+
+Output File Formats
 ------------------------------------------
 
 

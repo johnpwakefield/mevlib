@@ -13,6 +13,7 @@ __pycache__
 
 # data files
 *.dat
+*.mat
 
 # virtual environment directories
 mevlib.egg-info
