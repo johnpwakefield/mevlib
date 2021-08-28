@@ -8,7 +8,11 @@
 Multistep Effectiveness Factor Lookup Library
 ==============================================================================
 
-
+This package is certainly in its early stages.  We hope that others will find
+it useful, but it unlikely this package will do everything you want it to out
+of the box (though this is of course the goal).  If you intend to use it, feel
+free to send an email to the package maintainers (jwake@umich.edu) with any
+questions or concerns.
 
 
 
@@ -124,7 +128,7 @@ For ``diag`` and ``augd`` files:
 
 
 
-#TODO mev format
+#TODO document mev format
 
 
 
