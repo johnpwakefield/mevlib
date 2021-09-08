@@ -15,6 +15,9 @@ you are welcome to redistribute it under the GNU General Public License.
 @click.option('-a', '--all', 'wall', is_flag=True, help=(
     "Write all available tables for FMT."
     ))
+@click.option('-r', '--rate', 'wrate', is_flag=True, help=(
+    "Write lookup table of reaction rate transforms."
+    ))
 @click.option('-i', '--ints', 'wints', is_flag=True, help=(
     "Write lookup table of single-step effectiveness factors as a function "
     "of Thiele modulus."
@@ -22,14 +25,8 @@ you are welcome to redistribute it under the GNU General Public License.
 @click.option('-d', '--diag', 'wdiag', is_flag=True, help=(
     "Write lookup table of diagonalizations as a function of temperature."
     ))
-@click.option('-m', '--mevs', 'wmevs', is_flag=True, help=(
+@click.option('-l', '--full', 'wfull', is_flag=True, help=(
     "Write lookup table of Multistep Effectiveness Vector (MEV) transforms."
-    ))
-@click.option('-g', '--augd', 'waugd', is_flag=True, help=(
-    "Write lookup table of augmented diagonalizations (see README.rst)."
-    ))
-@click.option('-r', '--rate', 'wrate', is_flag=True, help=(
-    "Write lookup table of reaction rate transforms."
     ))
 @click.option('-v/-q', '--verb/--quiet', default=True, help=(
     "Verbosity."
@@ -38,7 +35,7 @@ you are welcome to redistribute it under the GNU General Public License.
 @click.argument('fmt', type=str)
 def maketable(
         src, fmt, verb=None,
-        wall=None, wints=None, wdiag=None, wmevs=None, waugd=None, wrate=None
+        wall=None, wrate=None, wints=None, wdiag=None, wfull=None
         ):
     """\b
     Computes lookup tables used for estimating diffusion limitations in porous
@@ -56,7 +53,7 @@ def maketable(
     contact jwake(at)umich.edu.
     """
     click.echo(COPYSTATEMENT)
-    make_table(src, fmt, wall, wints, wdiag, wmevs, waugd, wrate, verb)
+    make_table(src, fmt, wall, wrate, wints, wdiag, wfull, verb)
 
 
 @click.command()

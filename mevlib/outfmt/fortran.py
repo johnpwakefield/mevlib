@@ -32,7 +32,10 @@ def combinelines(limit, prespaces, lines):
     ])
 
 
-def w_mat_f03(outfile, spcsyms, temperatures, matrices, verb=False):
+def w_rate_f03(outfile, diagset, shape, precision, verb=False):
+
+    temperatures = diagset.Ts
+    matrices = diagset.get_transforms(shape, precision)
 
     setd  = r"this%d  = {}".format(matrices[0].shape[1])    #noqa E221
     setad = r"this%ad = {}".format(matrices[0].shape[0])
@@ -69,7 +72,10 @@ def w_mat_f03(outfile, spcsyms, temperatures, matrices, verb=False):
         f.write(program)
 
 
-def w_mat_f90(outfile, spcsyms, temperatures, matrices, verb=False):
+def w_rate_f90(outfile, diagset, shape, precision, verb=False):
+
+    temperatures = diagset.Ts
+    matrices = diagset.get_transforms(shape, precision)
 
     setd  = r"this%d  = {}".format(matrices[0].shape[1])    #noqa E221
     setad = r"this%ad = {}".format(matrices[0].shape[0])
@@ -104,5 +110,4 @@ def w_mat_f90(outfile, spcsyms, temperatures, matrices, verb=False):
 
     with open(outfile, 'w') as f:
         f.write(program)
-
 

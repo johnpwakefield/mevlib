@@ -19,10 +19,35 @@ class Species(ABC):
         return "{} ({})".format(self.name, self.symb)
 
     @abstractmethod
+    def isgas(self):
+        pass
+
+    # for solid species this should return an arbitrary float
+    @abstractmethod
     def effective_diffusion(self, T):
         pass
 
+class SolidSpecies(Species):
+
+    def isgas(self):
+        return False
+
+    def __init__(self, symb, name, Mi):
+        super().__init__(symb, name)
+        self.Mi = Mi
+
+    def __repr__(self):
+        return "SolidSpecies(symb = {}, name = {}, Mi = {})".format(
+            self.symb, self.name, self.Mi
+        )
+
+    def effective_diffusion(self, T):
+        return 1.0
+
 class KnudsenSpecies(Species):
+
+    def isgas(self):
+        return True
 
     # put the species-specific parameters last so we can curry the constructor
     def __init__(self, Dpore, epspore, tau, symb, name, Mi):
@@ -31,10 +56,10 @@ class KnudsenSpecies(Species):
 
     def __repr__(self):
         return (
-            "KnudsenSpecies(Dpore = {}, epspore = {}, tau = {}, symb = {}, "
-            "name = {}, Mi = {})"
+            "KnudsenSpecies(symb = {}, name = {}, Dpore = {}, epspore = {}, "
+            "tau = {}, Mi = {})"
         ).format(
-            self.Dpore, self.epspore, self.tau, self.symb, self.name, self.Mi
+            self.symb, self.name, self.Dpore, self.epspore, self.tau, self.Mi
         )
 
     def effective_diffusion(self, T):
@@ -44,10 +69,6 @@ class KnudsenSpecies(Species):
             8 * GASCONST * T / pi / self.Mi
         ) * self.epspore / self.tau
 
-    def effective_diffusion_unrootscaled(self):
-        return 1e6 / 3 * self.Dpore * sqrt(
-            8 * GASCONST * pi / self.Mi
-        ) * self.epspore / self.tau
 
 class Reaction(ABC):
     src, dst = None, None       # names of species
@@ -88,6 +109,7 @@ class ArrheniusReaction(Reaction):
             T0inv = self.T0**(-1)
         return A * exp(-self.Ea / GASCONST * (1 / T - T0inv))
 
+
 class Mechanism(object):
     """
     To avoid confusion no methods here should change the reaction from the
@@ -99,12 +121,18 @@ class Mechanism(object):
 
     spcs = None             # list of species objects
     rxns = None             # list of reaction objects
-    numactive = None        # ignore products
+    Ng, Ns = None, None     # number of gases, number of solids
 
     # providing an explicit constructor prevents the common error of
     # overwriting default values
     def __init__(self, spcs, rxns):
         self.spcs, self.rxns = spcs, rxns
+        self.Ng, self.Ns = 0, 0
+        for spc in self.spcs:
+            if spc.isgas():
+                self.Ng += 1
+            else:
+                self.Ns += 1
 
     def isreversible(self):
         edges = [(rxn.src, rxn.dst) for rxn in self.rxns]
@@ -121,7 +149,51 @@ class Mechanism(object):
             root = findroot(edges)
         return len(edges) == 0
 
-    def findnonreacting(self, verb):
+    def isreversibleorder(self):
+        for i, spc in enumerate(self.spcs):
+            for rxn in filter(lambda r: r.src == spc, self.rxns):
+                if rxn.dst not in self.spcs[i:]:
+                    return False
+        return True
+
+    def isphaseorder(self):
+        solid = False
+        for spc in self.spcs:
+            if solid and spc.isgas():
+                return False
+            if not spc.isgas():
+                solid = True
+        return True
+
+    # checks if all reactants are gases (not solids)
+    def isgasreactants(self):
+        spcsd = {spc.symb: spc for spc in self.spcs}
+        return all([spcsd[r.src].isgas() for r in self.rxns])
+
+    def findundefined(self, verb=False):
+        spcnames = [spc.symb for spc in self.spcs]
+        undef = []
+        for rxn in self.rxns:
+            if rxn.src not in spcnames:
+                undef.append(rxn.src)
+                if verb:
+                    print("Source '{}' not in species list.".format(rxn.src))
+            if rxn.dst not in spcnames:
+                undef.append(rxn.dst)
+                if verb:
+                    print(
+                        "Destination '{}' not in species list.".format(rxn.dst)
+                    )
+        return undef
+
+    def isvalid(self):
+        return all([
+            self.isphaseorder(),
+            self.isgasreactants(),
+            len(self.findundefined()) == 0
+        ])
+
+    def findnonreacting(self, verb=False):
         nonreacting = [
             spc.symb for spc in self.spcs
             if not any([
@@ -138,7 +210,7 @@ class Mechanism(object):
                 print("All species are involved in at least one reaction.")
         return nonreacting
 
-    def findproducts(self, verb):
+    def findproducts(self, verb=False):
         products = [
             spc.symb for spc in self.spcs
             if not any([spc.symb == rxn.src for rxn in self.rxns])
@@ -155,22 +227,6 @@ class Mechanism(object):
             self.findproducts(False)
         return self.numactive
 
-    def findundefined(self, verb):
-        spcnames = [spc.symb for spc in self.spcs]
-        undef = []
-        for rxn in self.rxns:
-            if rxn.src not in spcnames:
-                undef.append(rxn.src)
-                if verb:
-                    print("Source '{}' not in species list.".format(rxn.src))
-            if rxn.dst not in spcnames:
-                undef.append(rxn.dst)
-                if verb:
-                    print(
-                        "Destination '{}' not in species list.".format(rxn.dst)
-                    )
-        return undef
-
     def getkijs(self, T):
         symbols = [spc.symb for spc in self.spcs]
         kijs = np.zeros((len(self.spcs), len(self.spcs)))
@@ -185,7 +241,7 @@ class Mechanism(object):
             Dis[i] = spcs.effective_diffusion(T)
         return Dis
 
-    def getmatrix(self, T):
+    def getB(self, T):
         kijs, Dis = self.getkijs(T), self.getDis(T)
         consumption = np.diag(np.sum(
             kijs / np.tile(Dis.reshape((-1, 1)), len(self.spcs)),

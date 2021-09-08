@@ -16,10 +16,6 @@ click >= 7.0.0
 pyparsing ~= 2.4.7
 scipy ~= 1.5.4
 
-## only required for the nice progress bar ##
-# this might be worth removing as computations are so fast
-tqdm ~= 4.36.1
-
 ## only required for the volrender scripts ##
 plotly ~= 4.4.1
 
