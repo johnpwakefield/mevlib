@@ -60,7 +60,15 @@ def parse_file(infile, verb=True):
 
 def compute_remesh(lambdas):
 
-    print("TODO remeshing not yet implemented; returning original mesh")
+    print("TODO implement nontrivial remeshing")
+
+    # warn about huge numbers
+    for x in lambdas:
+        if abs(x) > 1e80:
+            print("Warning: lambda = {}.")
+
+    # take out redundant zeros
+    lambdas = sorted(list(filter(lambda x: x, lambdas)) + [0.0])
 
     return lambdas
 
@@ -120,6 +128,7 @@ def make_table(
                 lm for lams in diagset.get_evals() for lm in lams
             ]))
             if verb:
+                print("Final mesh has {} lambda values.".format(len(lambdas)))
                 print("Computing integrals...")
             ints = compute_integrals(lambdas, shape, precision)
             intsf(OUTNAME.format('ints', ext), lambdas, ints, verb=verb)

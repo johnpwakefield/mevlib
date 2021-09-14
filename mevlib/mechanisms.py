@@ -235,20 +235,28 @@ class Mechanism(object):
             kijs[i, j] = rxn.kij(T)
         return kijs
 
-    def getDis(self, T):
+    def getDis(self, T, inclsolid=True):
         Dis = np.empty((len(self.spcs),))
         for i, spcs in enumerate(self.spcs):
             Dis[i] = spcs.effective_diffusion(T)
-        return Dis
+        if inclsolid:
+            return Dis
+        else:
+            return Dis[:self.Ng]
 
     def getB(self, T):
-        kijs, Dis = self.getkijs(T), self.getDis(T)
+        kijs, Dis = self.getkijs(T), self.getDis(T, inclsolid=True)
         consumption = np.diag(np.sum(
             kijs / np.tile(Dis.reshape((-1, 1)), len(self.spcs)),
             axis=1
         ))
         production = kijs.T / np.tile(Dis.reshape((-1, 1)), len(self.spcs))
         B = consumption - production  # yes, this is a bad sign convention
-        return B
+        if self.Ng > 0:
+            assert(np.all(B[:, -self.Ns:] == 0.0))
+        if self.Ng > 0:
+            return B[:, :self.Ng]
+        else:
+            return B
 
 

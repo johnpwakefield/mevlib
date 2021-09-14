@@ -6,7 +6,7 @@ from math import floor
 import pyparsing as pp
 
 from mevlib.shapes import Cylinder
-from mevlib.mechanisms import KnudsenSpecies, ArrheniusReaction
+from mevlib.mechanisms import KnudsenSpecies, SolidSpecies, ArrheniusReaction
 
 
 class SBLParsingException(Exception):
@@ -33,6 +33,7 @@ def parse_sensible(f, verb=False):
     pp_comment = pp.oneOf('! # //') + pp.restOfLine
     pp_to = pp.Suppress(pp.Literal('->') | pp.Literal('='))
     pp_value = pp_real | keylist(["default", "specified", "omitted"])
+    pp_phase = keylist(["s", "g"])
     pp_valpair = pp.Group(pp_word + pp_value)
     def simplesection(key, ls):
         pp_simp_typ = pp.Group(pp_type + keylist(ls))
@@ -58,7 +59,8 @@ def parse_sensible(f, verb=False):
 
     # species section
     pp_spec_row = pp.Group(
-        pp_symb + pp.Optional(pp_qstr) + pp.Optional(pp_real)
+        pp_symb + pp.Optional(pp_qstr) + pp.Optional(pp_phase)
+        + pp.Optional(pp_real)
     )
     pp_spec_tbl = pp.Group(
         pp_tble + pp.Group(pp.ZeroOrMore(pp_spec_row)) + pp_end
@@ -209,7 +211,7 @@ def parse_sensible(f, verb=False):
                 if param not in d['diffusion'].keys():
                     print("Diffusion section missing '{}'.".format(param))
                     raise SBLParsingException("Missing diffusion parameters.")
-            speciesconstructor = partial(KnudsenSpecies, *[
+            gasconstructor = partial(KnudsenSpecies, *[
                 d['diffusion'][param] for param in knudsenparams
             ])
         else:
@@ -217,6 +219,7 @@ def parse_sensible(f, verb=False):
                 "Did not recognize diffusion type '{}'."
             ).format(d['diffusion']['type']))
             raise SBLParsingException("Unrecognized diffusion type.")
+    solidconstructor = SolidSpecies
 
     # make species list
     if 'species' in d:
@@ -227,18 +230,22 @@ def parse_sensible(f, verb=False):
         name = d['species'].get('longname', 'default')
         if name == 'default':
             name == 'omitted'
+        phase = d['species'].get('phase', 'default')
+        if phase == 'default':
+            phase == 'specified'
         molweight = d['species'].get('molweight', 'default')
         if molweight == 'default':
             molweight == 'specified'
         def checkrow(row):
             if (
                 len(row)
-                != (1 + (name == 'specified') + (molweight == 'specified'))
+                != (1 + (name == 'specified') + (phase == 'specified') + (molweight == 'specified'))
             ):
                 print("Unexpected length of table row.")
                 expected_syms = [
                     ['symbol']
                     + (['name'] if name == 'specified' else [])
+                    + (['phase'] if phase == 'specified' else [])
                     + (['molweight'] if molweight == 'specified' else [])
                 ]
                 print("Expected {} columns: {}.".format(
@@ -258,14 +265,24 @@ def parse_sensible(f, verb=False):
                         "or 'SPECIFIED'. "
                     ).format(name))
                 return name
+        def getphase(row):
+            if phase == 'omitted':
+                raise SBLParsingException("Cannot omit phase.")
+            else:
+                return row[2]
         def getmolweight(row):
             if molweight == 'omitted':
                 raise SBLParsingException("Cannot ommit molecular weight.")
             elif molweight == 'specified':
-                return row[2]
+                return row[3]
         def makespecies(row):
             checkrow(row)
-            return speciesconstructor(row[0], getname(row), getmolweight(row))
+            if getphase(row).strip().lower() == 'g':
+                return gasconstructor(row[0], getname(row), getmolweight(row))
+            elif getphase(row).strip().lower() == 's':
+                return solidconstructor(row[0], getname(row), getmolweight(row))
+            else:
+                raise SBLParsingException("Phase must be 'g' or 's'.")
         species = [makespecies(row) for row in d['species']['table']]
 
     # make reaction list

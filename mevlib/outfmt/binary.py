@@ -30,7 +30,7 @@ def w_rate_bin(outfile, diagset, shape, precision, verb=False):
         f.write(Ng.to_bytes(1, 'little'))
         f.write(Ns.to_bytes(1, 'little'))
         f.write(M.to_bytes(2, 'little'))
-        for bits in symlist_fixedlen(spcsyms, s=16):
+        for bits in symlist_fixedlen(spcsyms, s=8):
             f.write(bits)
         np.array(diagset.Ts).tofile(f)
         datamat.T.tofile(f)
@@ -56,7 +56,7 @@ def w_diag_bin(outfile, diagset, shape, precision, verb=False):
         f.write(Ng.to_bytes(1, 'little'))
         f.write(Ns.to_bytes(1, 'little'))
         f.write(M.to_bytes(2, 'little'))
-        for bits in symlist_fixedlen(spcsyms, s=16):
+        for bits in symlist_fixedlen(spcsyms, s=8):
             f.write(bits)
         np.array(diagset.Ts).tofile(f)
         for D, lams, R, Bs in zip(
@@ -80,7 +80,7 @@ def w_full_bin(outfile, diagset, shape, precision, verb=False):
         f.write(Ng.to_bytes(1, 'little'))
         f.write(Ns.to_bytes(1, 'little'))
         f.write(M.to_bytes(2, 'little'))
-        for bits in symlist_fixedlen(spcsyms, s=16):
+        for bits in symlist_fixedlen(spcsyms, s=8):
             f.write(bits)
         np.array(diagset.Ts).tofile(f)
         for D, lams, R, Bs, Rinv in zip(

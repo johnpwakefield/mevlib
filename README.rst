@@ -127,7 +127,7 @@ Binary Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 All numbers are little-endian.  The format descriptions below impose the limit
-of 16 ascii characters for a species name, 128 gaseous and solid species, and a
+of 8  ascii characters for a species name, 128 gaseous and solid species, and a
 maximum lookup table size of 32768.  (The single-stage effectiveness factor has
 a 4 byte table length so we mostly stay aligned to 32 bit words.)
 
@@ -148,7 +148,7 @@ For ``rate`` files:
 |                         +-----------------------------------+-------------------+--------------------+----------------------+
 |                         | Size of Lookup Table :math:`M`    | 2                 | integer            |                      |
 +-------------------------+-----------------------------------+-------------------+--------------------+----------------------+
-| Repeat                  | Species Identifier                | 16                | ascii              |                      |
+| Repeat                  | Species Identifier                | 8                 | ascii              |                      |
 | :math:`N = N_g + N_s`   |                                   |                   |                    |                      |
 | times                   |                                   |                   |                    |                      |
 +-------------------------+-----------------------------------+-------------------+--------------------+----------------------+
@@ -192,7 +192,7 @@ For ``diag`` files:
 |                         +-----------------------------------+-------------------+--------------------+----------------------+
 |                         | Size of Lookup Table :math:`M`    | 2                 | integer            |                      |
 +-------------------------+-----------------------------------+-------------------+--------------------+----------------------+
-| Repeat                  | Species Identifier                | 16                | ascii              |                      |
+| Repeat                  | Species Identifier                | 8                 | ascii              |                      |
 | :math:`N = N_g + N_s`   |                                   |                   |                    |                      |
 | times                   |                                   |                   |                    |                      |
 +-------------------------+-----------------------------------+-------------------+--------------------+----------------------+
@@ -224,7 +224,7 @@ For ``fulldiag`` files:
 |                         +-----------------------------------+-------------------+--------------------+----------------------+
 |                         | Size of Lookup Table :math:`M`    | 2                 | integer            |                      |
 +-------------------------+-----------------------------------+-------------------+--------------------+----------------------+
-| Repeat                  | Species Identifier                | 16                | ascii              |                      |
+| Repeat                  | Species Identifier                | 8                 | ascii              |                      |
 | :math:`N = N_g + N_s`   |                                   |                   |                    |                      |
 | times                   |                                   |                   |                    |                      |
 +-------------------------+-----------------------------------+-------------------+--------------------+----------------------+
