@@ -19,4 +19,7 @@ __pycache__
 mevlib.egg-info
 virtualenv
 
+# scripts that aren't mine
+Integ_MEV_Sol*
+
 
