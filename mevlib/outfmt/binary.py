@@ -1,5 +1,8 @@
 
 
+from functools import reduce
+
+
 import numpy as np
 
 
@@ -63,6 +66,18 @@ def w_diag_bin(outfile, diagset, shape, precision, verb=False):
             diagset.get_Dis(), diagset.get_evals(),
             diagset.get_evects(), diagset.Bss
         ):
+            assert(np.all(
+                np.dot(
+                    D.reshape((1,-1)),
+                    np.vstack((
+                        np.dot(
+                            np.dot(R, np.diag(lams)),
+                            np.linalg.inv(R)
+                        ),
+                        Bs
+                    ))
+                )
+            ) < 1e-12)
             D.tofile(f)
             lams.tofile(f)
             R.T.tofile(f)

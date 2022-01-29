@@ -138,7 +138,7 @@ def rct_ptwise_diff(a2, Lx, Ly, M, N):
 
 # prism functions
 
-#TODO fix up the pseudospectral and finite difference methods below
+# TODO fix up the pseudospectral and finite difference methods below
 
 def psm_beta(a2, L1, L2, L3, ms, ns):
     return np.sqrt(
@@ -391,7 +391,10 @@ def sph_ptwise(a2, R, r):
     return (R / r) * np.sinh(np.sqrt(a2) * r) / np.sinh(np.sqrt(a2) * R)
 
 def sph_intgtd(a2, R):
-    a = np.sqrt(a2)
-    return 3.0 / (R * a) * (np.tanh(R * a)**(-1) - (R * a)**(-1))
+    if abs(a2) < 1e-11:
+        return 1.0
+    else:
+        a = np.sqrt(a2)
+        return 3.0 / (R * a) * (np.tanh(R * a)**(-1) - (R * a)**(-1))
 
 
