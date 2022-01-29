@@ -18,7 +18,7 @@ def diagonalize(Bg, reversible=False):
         print("Matrix has imaginary eigenvalues (irreversible).")
     lams, R = np.real_if_close(lams), np.real_if_close(R)
     if reversible:
-        pairs = [(lam, R[:, i].copy()) for i, lam in enumerate(lams)]
+        pairs = [(lam.copy(), R[:, i].copy()) for i, lam in enumerate(lams)]
         pairs = sorted(
             pairs, key=lambda tpl: np.argwhere(np.abs(tpl[1]) > 1e-6)[0]
         )
@@ -35,15 +35,15 @@ def computeintegral(shpe, lams, precision):
         1.0 if lam == 0.0 else shpe.intgtd(lam, precision) for lam in lams
         ])
 
+#TODO rename this to be something like "computeratetransform", add in a method for MEVs or mean values
 def computetransform(shpe, DboL2, lams, R, Bs, Rinv, precision):
     assert(R.shape[1] == Bs.shape[1])
     assert(R.shape == Rinv.shape)
     Ng, Ns = R.shape[0], Bs.shape[0]
     A = np.empty((Ng + Ns, Ng))
     tail = np.dot(np.diag(computeintegral(shpe, lams, precision)), Rinv)
-    A[:Ng, :] = reduce(np.dot, [np.diag(DboL2), R, np.diag(lams), tail])
-    if Ns > 0:
-        A[-Ns:, :] = reduce(np.dot, [np.diag(DboL2), Bs, R, tail])
+    A[:Ng, :] = reduce(np.dot, [np.diag(DboL2[:Ng]), R, np.diag(lams), tail])
+    A[Ng:, :] = reduce(np.dot, [np.diag(DboL2[Ng:]), Bs, R, tail])
     return A
 
 
@@ -63,6 +63,9 @@ class PointDiagonalization(object):
             self.Bg, reversible=mech.isreversible()
         )
 
+    def get_Dis(self):
+        return self.mech.getDis(self.T)
+
     def get_evals(self):
         return self.evals
 
@@ -71,9 +74,16 @@ class PointDiagonalization(object):
 
     def get_evectinv(self):
         if self.evectinv is None:
-            self.evectinv = self.evects.inv()
+            self.evectinv = la.inv(self.evects)
         return self.evectinv
 
+    def get_transform(self, shpe, precision):
+        return computetransform(
+            shpe, self.get_Dis(),
+            self.get_evals(), self.get_evects(),
+            self.Bs, self.get_evectinv(),
+            precision
+        )
 
 class DiagonalizationSet(object):
 
@@ -135,18 +145,15 @@ class DiagonalizationSet(object):
         ]
 
 
-# TODO deprecate or clean these up
 # pointwise transform (setup and compute functions so we don't recompute at
 # each point)
+# these are only intended to validate the remainder of the library; efficiency
+# here is not critical
 
 def diag_ptwise_setup(shpe, mech, bdry, T, precision):
-    # TODO interrogate the Mechanism object to choose an ideal method
-    lams, R = la.eig(mech.getmatrix(T))
-    if np.max(np.abs(lams.imag)) > 1e-8:
-        print("Matrix has imaginary eigenvalues (irreversible).")
-    lams, R = np.real_if_close(lams), np.real_if_close(R)
-    ubdry = la.solve(R, bdry.reshape(-1, 1))
-    return shpe, lams, R, ubdry, precision
+    diag = PointDiagonalization(mech, T)
+    ubdry = la.solve(diag.get_evects(), bdry[:mech.Ng].reshape(-1,1))
+    return shpe, diag.get_evals(), diag.get_evects(), ubdry, precision
 
 def diag_ptwise_eval(setupdata, *coords):
     shpe, lams, R, ubdry, precision = setupdata

@@ -5,7 +5,7 @@ from math import floor
 
 import pyparsing as pp
 
-from mevlib.shapes import Cylinder
+from mevlib.shapes import Sphere, Cylinder
 from mevlib.mechanisms import KnudsenSpecies, SolidSpecies, ArrheniusReaction
 
 
@@ -130,6 +130,7 @@ def parse_sensible(f, verb=False):
             print("Shape type not specified.")
             raise SBLParsingException("Shape type not specified.")
         if d['shape']['type'] == "cylinder":
+            print("Using shape '{}'.".format(d['shape']['type']))
             if 'radius' not in d['shape'] and 'diameter' not in d['shape']:
                 print("Radius missing from shape dimensions.")
                 raise SBLParsingException("Missing shape dimensions.")
@@ -148,7 +149,17 @@ def parse_sensible(f, verb=False):
         elif d['shape']['type'] == "box":
             raise NotImplementedError("Shape 'box' not implemented.")
         elif d['shape']['type'] == "sphere":
-            raise NotImplementedError("Shape 'sphere' not implemented.")
+            print("Using shape '{}'.".format(d['shape']['type']))
+            if 'radius' in d['shape'] and 'diameter' in d['shape']:
+                print("Radius and diameter cannot both be specified.")
+                raise SBLParsingException("Shape dimensions overspecified.")
+            if 'radius' in d['shape']:
+                shape = Sphere(d['shape']['radius'])
+            elif 'diameter' in d['shape']:
+                shape = Sphere(d['shape']['diameter'] / 2)
+            else:
+                print("Must specify radius or height.")
+                raise SBLParsingException("Missing shape dimensions.")
         else:
             print("Shape '{}' not recognized.".format(d['shape']['type']))
             raise SBLParsingException(
@@ -242,12 +253,12 @@ def parse_sensible(f, verb=False):
                 != (1 + (name == 'specified') + (phase == 'specified') + (molweight == 'specified'))
             ):
                 print("Unexpected length of table row.")
-                expected_syms = [
+                expected_syms = (
                     ['symbol']
                     + (['name'] if name == 'specified' else [])
                     + (['phase'] if phase == 'specified' else [])
                     + (['molweight'] if molweight == 'specified' else [])
-                ]
+                )
                 print("Expected {} columns: {}.".format(
                     len(expected_syms), ", ".join(expected_syms)
                 ))

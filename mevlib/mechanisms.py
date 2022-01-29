@@ -6,7 +6,7 @@ from math import sqrt, inf, exp, pi
 import numpy as np
 
 
-GASCONST = 8.31446261815324e-3  # kJ per mol Kelvin
+GASCONST = 8.31446261815324     # J per mol Kelvin
 
 
 class Species(ABC):
@@ -63,10 +63,10 @@ class KnudsenSpecies(Species):
         )
 
     def effective_diffusion(self, T):
-        # input units are nm for Dpore, kJ per mol K for GASCONST, K for T, and
-        # g per mod for Mi; output units are square micrometers per second
-        return 1e6 / 3 * self.Dpore * sqrt(
-            8 * GASCONST * T / pi / self.Mi
+        # input units are nm for Dpore, J per mol K for GASCONST, K for T, and
+        # g per mol for Mi; output units are square micrometers per second
+        return 1e3 / 3 * self.Dpore * sqrt(
+            8 * GASCONST * T / pi / (1e-3 * self.Mi)
         ) * self.epspore / self.tau
 
 
@@ -107,7 +107,7 @@ class ArrheniusReaction(Reaction):
             T0inv = 0.0
         else:
             T0inv = self.T0**(-1)
-        return A * exp(-self.Ea / GASCONST * (1 / T - T0inv))
+        return A * exp(-self.Ea * 1e3 / GASCONST * (1 / T - T0inv))
 
 
 class Mechanism(object):
@@ -251,8 +251,9 @@ class Mechanism(object):
             axis=1
         ))
         production = kijs.T / np.tile(Dis.reshape((-1, 1)), len(self.spcs))
-        B = consumption - production  # yes, this is a bad sign convention
-        if self.Ng > 0:
+        B = consumption - production
+        assert(np.all(np.dot(Dis.reshape((1,-1)), B) < 1e-13))
+        if self.Ns > 0:
             assert(np.all(B[:, -self.Ns:] == 0.0))
         if self.Ng > 0:
             return B[:, :self.Ng]

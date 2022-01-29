@@ -24,9 +24,9 @@ TEMPERATURE
 
 TYPE UNIFORM
 
-START   500.0
-STOP    700.0
-NUM     200
+START   550.0
+STOP    900.0
+NUM     400
 
 END
 
@@ -35,7 +35,7 @@ DIFFUSION
 
 TYPE KNUDSEN        # other types to be added; this is the default
 
-POREDIAMETER    0.002
+POREDIAMETER    2.0         # nanometers
 VOIDAGE         0.319
 TORTUOSITY      7.0
 
