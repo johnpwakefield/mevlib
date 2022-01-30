@@ -1,8 +1,5 @@
 
 
-from functools import reduce
-
-
 import numpy as np
 
 
@@ -35,6 +32,7 @@ def w_rate_bin(outfile, diagset, shape, precision, verb=False):
         f.write(M.to_bytes(2, 'little'))
         for bits in symlist_fixedlen(spcsyms, s=8):
             f.write(bits)
+        np.array([spc.Mi for spc in diagset.mech.spcs]).tofile(f)
         np.array(diagset.Ts).tofile(f)
         datamat.T.tofile(f)
 
@@ -61,6 +59,7 @@ def w_diag_bin(outfile, diagset, shape, precision, verb=False):
         f.write(M.to_bytes(2, 'little'))
         for bits in symlist_fixedlen(spcsyms, s=8):
             f.write(bits)
+        np.array([spc.Mi for spc in diagset.mech.spcs]).tofile(f)
         np.array(diagset.Ts).tofile(f)
         for D, lams, R, Bs in zip(
             diagset.get_Dis(), diagset.get_evals(),
@@ -68,7 +67,7 @@ def w_diag_bin(outfile, diagset, shape, precision, verb=False):
         ):
             assert(np.all(
                 np.dot(
-                    D.reshape((1,-1)),
+                    D.reshape((1, -1)),
                     np.vstack((
                         np.dot(
                             np.dot(R, np.diag(lams)),
@@ -97,6 +96,7 @@ def w_full_bin(outfile, diagset, shape, precision, verb=False):
         f.write(M.to_bytes(2, 'little'))
         for bits in symlist_fixedlen(spcsyms, s=8):
             f.write(bits)
+        np.array([spc.Mi for spc in diagset.mech.spcs]).tofile(f)
         np.array(diagset.Ts).tofile(f)
         for D, lams, R, Bs, Rinv in zip(
             diagset.get_Dis(), diagset.get_evals(),
