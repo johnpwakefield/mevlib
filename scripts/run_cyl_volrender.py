@@ -6,7 +6,9 @@ import numpy as np
 import plotly.graph_objects as go
 
 from mevlib.shapes import Cylinder
-from mevlib.options import imgpath
+
+
+# font sizes and the like here have not been adapted to match other scripts
 
 
 a2 = 0.8**2
@@ -34,17 +36,17 @@ green = [
     [1.0, "green"]
 ]
 
-cyl1theta, cyl1z = np.mgrid[0:2*np.pi:N*1j,0:zc:N*1j]
+cyl1theta, cyl1z = np.mgrid[0:2*np.pi:N*1j, 0:zc:N*1j]
 cyl1u = np.zeros_like(cyl1theta)
 
-flat1theta, flat1r = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
+flat1theta, flat1r = np.mgrid[0:2*np.pi:N*1j, 0:R:N*1j]
 flat1z = zc * np.ones_like(flat1theta)
 flat1u = np.vectorize(cyl.ptwise)(
     a2, {'ntrunc': slicetrunc, 'ktrunc': slicetrunc}, flat1r, zc
 )
 flat1u[flat1r*np.sin(flat1theta) < -yc] = 0.0
 
-cyl2theta, cyl2z = np.mgrid[0:2*np.pi:N*1j,zc:H:N*1j]
+cyl2theta, cyl2z = np.mgrid[0:2*np.pi:N*1j, zc:H:N*1j]
 cyl2x = R * np.cos(cyl2theta)
 cyl2y = np.minimum(R * np.sin(cyl2theta), yc)
 cyl2u = np.vectorize(cyl.ptwise)(
@@ -54,7 +56,7 @@ cyl2u = np.vectorize(cyl.ptwise)(
 cyl2u[cyl2y != yc] = 1e-7
 print(np.max(cyl2u), np.min(cyl2u))
 
-flat2theta, flat2r = np.mgrid[0:2*np.pi:N*1j,0:R:N*1j]
+flat2theta, flat2r = np.mgrid[0:2*np.pi:N*1j, 0:R:N*1j]
 flat2x = R * np.cos(flat2theta)
 flat2y = np.minimum(R * np.sin(flat2theta), yc)
 flat2z = H * np.ones_like(flat2theta)
@@ -90,6 +92,6 @@ fig8.update_layout(
 
 
 for i, fig in enumerate([fig8]):
-    fig.write_html(imgpath("volrender-fig{}.html".format(8+i)))
+    fig.write_html("img/cyl_volrender_fig{}.html".format(8+i))
 
 

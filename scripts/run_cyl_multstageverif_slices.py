@@ -12,13 +12,20 @@ from matplotlib import pyplot as plt
 from mevlib.mechanisms import Mechanism
 from mevlib.shapes import Cylinder
 from mevlib.diagonalization import diag_ptwise_setup, diag_ptwise_eval
-from mevlib.options import showfigs, imgpath
 from mevlib.parsing.auto import parse_attempt
 
 
-plt.rc('font', size=12)
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=18)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (2.75, 2.5)
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
+
+markersize = 2
 
 
 cases = [
@@ -39,7 +46,7 @@ reffile = "data/multistage_cyl.pickle"
 refdata = pickle.loads(pkgutil.get_data('mevlib', reffile))
 cases = [(Cylinder(*dims), T, np.array(bdry)) for dims, T, bdry in cases]
 figs, axs = zip(*[
-    plt.subplots(5, 2, figsize=(8.0, 14.5)) for i in range(len(cases))
+    plt.subplots(5, 2, figsize=figsize(5, 2)) for i in range(len(cases))
 ])
 for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
     # parse test mechanism
@@ -59,50 +66,40 @@ for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
             rfys = ref['y'][1:-1]
             if dr == "H":
                 our = [
-                    diag_ptwise_eval(
-                        diagdata, 0.0, 1e6 * z + cyl.H / 2
-                    )
+                    diag_ptwise_eval(diagdata, 0.0, 1e6 * z + cyl.H / 2)
                     for z in xs
                 ]
             else:
                 our = [
-                    diag_ptwise_eval(
-                        diagdata, 1e6 * r, cyl.H / 2
-                    )
+                    diag_ptwise_eval(diagdata, 1e6 * r, cyl.H / 2)
                     for r in xs
                 ]
-            axs[i][j,k].plot(
+            axs[i][j, k].plot(
                 1e6 * np.array(xs), rfys, 'bx',
-                label="Reference Solution"
+                label="Reference Solution", markersize=markersize
             )
-            axs[i][j,k].plot(
+            axs[i][j, k].plot(
                 1e6 * np.array(xs), [y[j] for y in our], 'g+',
-                label="Our Solution"
+                label="Our Solution", markersize=markersize
             )
             if dr == "H":
-                axs[i][j,k].set_xlabel(r"\( z \)")
+                axs[i][j, k].set_xlabel(r"\( z \)")
             else:
-                axs[i][j,k].set_xlabel(r"\( r \)")
-            axs[i][j,k].set_ylabel(r"\( C_{} \)".format(j+1))
-            axs[i][j,k].grid()
+                axs[i][j, k].set_xlabel(r"\( r \)")
+            axs[i][j, k].set_ylabel(r"\( C_{} \)".format(j+1))
+            axs[i][j, k].grid()
             refrange = max(ref['y']) - min(xs)
             if False:
-                axs[i][j,k].set_ylim((
+                axs[i][j, k].set_ylim((
                     min(ref['y']) - 0.1 * refrange,
                     max(ref['y']) + 0.1 * refrange
                 ))
-    axs[i][-1,-1].legend()
+    axs[i][-1, -1].legend()
 
 
-for fig in figs:
+for i, fig in enumerate(figs):
     fig.tight_layout()
-
-
-if showfigs():
-    plt.show()
-else:
     for ext in ['svg', 'pdf']:
-        for i, fig in enumerate(figs):
-            fig.savefig(imgpath("multistage_cyl_case{}.{}".format(i+1, ext)))
+        fig.savefig("img/cyl_multistage_case{}.{}".format(i+1, ext))
 
 

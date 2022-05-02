@@ -6,12 +6,17 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from mevlib.shapes import Cylinder
-#cyl_ptwise_radial_vect, cyl_ptwise_axial_vect
-from mevlib.options import imgpath, showfigs
 
 
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=12)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (2.75, 2.5)
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
 
 
 a2 = 0.8**2
@@ -25,8 +30,12 @@ truncs = [2, 6, 12, 24]
 slicetrunc = 80
 
 
-fig1, axs1 = plt.subplots(len(truncs), len(truncs))
-fig2, axs2 = plt.subplots(len(truncs), len(truncs))
+fig1, axs1 = plt.subplots(
+    len(truncs), len(truncs), figsize=figsize(len(truncs), len(truncs))
+)
+fig2, axs2 = plt.subplots(
+    len(truncs), len(truncs), figsize=figsize(len(truncs), len(truncs))
+)
 
 for fig, axs, xlims, ylims, zlim, in [
     (fig1, axs1, None, None, 2.0),
@@ -61,38 +70,46 @@ for fig, axs, xlims, ylims, zlim, in [
 #           axs[i, j].set_ylabel("z")
 
 
-fig3, axs3 = plt.subplots(2, len(truncs))
+fig3, axs3 = plt.subplots(2, len(truncs), figsize=figsize(2, len(truncs)))
 for i, trunc in enumerate(truncs):
     for j, f in enumerate(
         map(np.vectorize, [cyl.ptwise_radial, cyl.ptwise_axial])
     ):
         cf = axs3[j, i].contourf(rmesh, zmesh, f(a2, trunc, rmesh, zmesh))
-        axs3[j,i].set_xlim((0.0, R))
-        axs3[j,i].set_ylim((0.0, H))
-        fig3.colorbar(cf, ax=axs3[j,i])
-        axs3[j,i].set_xlabel("r")
-        axs3[j,i].set_ylabel("z")
+        axs3[j, i].set_xlim((0.0, R))
+        axs3[j, i].set_ylim((0.0, H))
+        fig3.colorbar(cf, ax=axs3[j, i])
+        axs3[j, i].set_xlabel("r")
+        axs3[j, i].set_ylabel("z")
     axs3[0, i].set_title("{}".format(trunc))
 
 
-fig4, axs4 = plt.subplots(2, 2)
-for i, f in enumerate(map(
-    np.vectorize, [cyl.ptwise_radial, cyl.ptwise_axial]
-)):
-    nd = "First" if i == 0 else "Second"
-    axs4[i,0].plot(rs, f(a2, slicetrunc, rs, H/3))
-    axs4[i,0].set_xlabel(r"\( r \)")
-    axs4[i,0].set_ylim((-0.5, 1.5))
-    axs4[i,0].set_title(r"{} sum, slice at \( z = H / 3 \)".format(nd))
-    axs4[i,1].plot(zs, f(a2, slicetrunc, R/3, zs))
-    axs4[i,1].set_xlabel(r"\( z \)")
-    axs4[i,1].set_ylim((-0.5, 1.5))
-    axs4[i,1].set_title(r"{} sum, slice at \( r = R / 3 \)".format(nd))
-    axs4[i,0].grid()
-    axs4[i,1].grid()
+fig4, axs4 = plt.subplots(2, 2, figsize=figsize(2, 2))
+fig4_notitle, axs4_notitle = plt.subplots(2, 2, figsize=figsize(2, 2))
+for n, (fig, axs) in [(fig4, axs4), (fig4_notitle, axs4_notitle)]:
+    for i, f in enumerate(map(
+        np.vectorize, [cyl.ptwise_radial, cyl.ptwise_axial]
+    )):
+        nd = "First" if i == 0 else "Second"
+        axs4[i, 0].plot(rs, f(a2, slicetrunc, rs, H/3))
+        axs4[i, 0].set_xlabel(r"\( r \)")
+        axs4[i, 0].set_ylim((-0.5, 1.5))
+        if n == 0:
+            axs4[i, 0].set_title(
+                r"{} sum, slice at \( z = H / 3 \)".format(nd)
+            )
+        axs4[i, 1].plot(zs, f(a2, slicetrunc, R/3, zs))
+        axs4[i, 1].set_xlabel(r"\( z \)")
+        axs4[i, 1].set_ylim((-0.5, 1.5))
+        if n == 0:
+            axs4[i, 1].set_title(
+                r"{} sum, slice at \( r = R / 3 \)".format(nd)
+            )
+        axs4[i, 0].grid()
+        axs4[i, 1].grid()
 
 
-fig5, ax5 = plt.subplots(1, 1, figsize=(3.0,3.0))
+fig5, ax5 = plt.subplots(1, 1, figsize=figsize(1, 1))
 vals = (
     np.vectorize(cyl.ptwise_radial)(a2, slicetrunc, rmesh, zmesh) +
     np.vectorize(cyl.ptwise_axial)(a2, slicetrunc, rmesh, zmesh)
@@ -106,14 +123,15 @@ ax5.set_xlabel(r"\( r \)")
 ax5.set_ylabel(r"\( z \)")
 
 
-if not showfigs():
-    for i, fig in enumerate([fig1, fig2, fig3, fig4, fig5]):
-        fig.tight_layout()
-        for ext in ['svg', 'pdf']:
-            fig.savefig(imgpath(
-                "graphic-{}.{}".format("fig{}".format(i+1), ext)
-            ))
-else:
-    plt.show()
+for fig, figname in [
+    (fig1, "fig1"),
+    (fig2, "fig2"),
+    (fig3, "fig3"),
+    (fig4, "fig4"), (fig4_notitle, "fig4_notitle"),
+    (fig5, "fig5")
+]:
+    fig.tight_layout()
+    for ext in ['svg', 'pdf']:
+        fig.savefig("img/cyl_solvis_{}.{}".format(figname, ext))
 
 

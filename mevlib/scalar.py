@@ -51,16 +51,12 @@ def cyl_ptwise_axial_terms(a2, R, H, trunc, r, z, zero_cache=None):
     else:
         alpha = jn_zeros(0, trunc)
     lks = cyl_lk(a2, R, alpha)
-#   TODO this doesn't work, but we get NaNs without it
-#   coshrat = np.where(
-#       np.cosh(lks * H / 2) < 1e50,
-#       np.cosh(lks * (z - H / 2)) / np.cosh(lks * H / 2),
-#       np.exp(lks * (z - H)) + np.exp(-lks * z)
-#   )
-    return (
-        2.0 * np.cosh(lks * (z - H / 2)) / np.cosh(lks * H / 2)
-        * j0(alpha / R * r) / (j1(alpha) * alpha)
+    coshrat = np.where(
+        lks * H / 2 < 300,
+        np.cosh(lks * (z - H / 2)) / np.cosh(lks * H / 2),
+        0.0
     )
+    return 2.0 * coshrat * j0(alpha / R * r) / (j1(alpha) * alpha)
 
 def cyl_ptwise_radial(a2, R, H, ntrunc, r, z):
     return sum_standard(cyl_ptwise_radial_terms(a2, R, H, ntrunc, r, z))

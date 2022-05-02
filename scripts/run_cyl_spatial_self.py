@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
 
-import pkgutil
-import pickle
-
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib import colors
+from matplotlib import colors       #noqa W0611
 
 from mevlib.shapes import Cylinder
-from mevlib.options import imgpath, showfigs
 
 
-plt.rc('font', size=12)
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=18)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (2.75, 2.5)
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
 
 
 kexact = 200
@@ -44,7 +46,7 @@ wterrs = [None for c in cases]  # errors in weighted norm
 
 
 singfigs, singaxs = zip(*[
-    plt.subplots(1, 1, figsize=(4.0, 4.0)) for i in range(len(cases))
+    plt.subplots(1, 1, figsize=figsize(1, 1)) for i in range(len(cases))
 ])
 for i, (shp, phi2) in enumerate(cases):
     def solfunc(r, z, k):
@@ -73,12 +75,12 @@ for fig in singfigs:
     fig.tight_layout()
 
 
-l2fig, l2ax = plt.subplots(1, 1, figsize=(6.0, 6.0))
+l2fig, l2ax = plt.subplots(1, 1, figsize=figsize(2, 2))
 for i, (errs, mkr) in enumerate(zip(l2errs, ['x', 'o', '+', '<', '>'])):
     l2ax.semilogy(
         Ks, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
     )
-wtfig, wtax = plt.subplots(1, 1, figsize=(6.0, 6.0))
+wtfig, wtax = plt.subplots(1, 1, figsize=figsize(2, 2))
 for i, (errs, mkr) in enumerate(zip(wterrs, ['x', 'o', '+', '<', '>'])):
     wtax.semilogy(
         Ks, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
@@ -90,13 +92,10 @@ for ax in [l2ax, wtax]:
     ax.legend()
 
 
-if showfigs():
-    plt.show()
-else:
-    for ext in ['svg', 'pdf']:
-        l2fig.savefig(imgpath("spatial_self_l2errs.{}".format(ext)))
-        wtfig.savefig(imgpath("spatial_self_wterrs.{}".format(ext)))
-        for i, fig in enumerate(singfigs):
-            fig.savefig(imgpath("spatial_self_case{}.{}".format(i+1, ext)))
+for ext in ['svg', 'pdf']:
+    l2fig.savefig("img/cyl_spatial_self_l2errs.{}".format(ext))
+    wtfig.savefig("img/cyl_spatial_self_wterrs.{}".format(ext))
+    for i, fig in enumerate(singfigs):
+        fig.savefig("img/cyl_spatial_self_case{}.{}".format(i+1, ext))
 
 

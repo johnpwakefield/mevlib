@@ -10,15 +10,22 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from mevlib.mechanisms import Mechanism
-from mevlib.diagonalization import diag_ptwise_setup
+from mevlib.diagonalization import diag_ptwise_setup  # , PointDiagonalization
 from mevlib.shapes import Cylinder
-from mevlib.options import showfigs
 from mevlib.parsing.auto import parse_attempt
 
 
-plt.rc('font', size=12)
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=18)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (2.75, 2.5)
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
+
+markersize = 2
 
 
 cases = [
@@ -26,7 +33,7 @@ cases = [
     ((180.0, 360.0), 800.0, (36.0, 32.0, 28.0, 24.0, 8.0, 0.0)),
     ((180.0, 360.0), 600.0, (12.0, 16.0, 20.0, 24.0, 16.0, 0.0))
 ]
-mechfiles = [ # this is a hack because of the issue with the verif data
+mechfiles = [   # this is a hack because of the issue with the verif data
     'data/fcc_multistageverif_36.sbl',
     'data/fcc_multistageverif_36.sbl',
     'data/fcc_multistageverif_12.sbl'
@@ -40,7 +47,8 @@ refdata = pickle.loads(pkgutil.get_data('mevlib', reffile))
 cases = [(Cylinder(*dims), T, np.array(bdry)) for dims, T, bdry in cases]
 l2errs = [None for c in cases]
 figs, axs = zip(*[
-    plt.subplots(1, 2, figsize=(8.0, 14.5)) for i in range(len(cases))
+    plt.subplots(1, 2, figsize=figsize(1, 2))
+    for i in range(len(cases))
 ])
 for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
     # parse test mechanism
@@ -63,10 +71,9 @@ for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
     print("library computed sum of kijs is {}.".format(
         np.sum(libkijs, axis=0))
     )
-    phi2 = sum(libkijs[:, 0] / libDis[0])
+    phi2 = sum(libkijs[0, :] / libDis[0])
     # compare this phi2 to the one provided by diagonalization class
     _, lams, _, _, _ = diag_ptwise_setup(cyl, mech, bdry, temp, precision)
-    print(lams) #TODO fix this
     print("library phi2 is {}".format(max(lams)))
     print("manual phi2 is {}.".format(phi2))
     for k, dr in enumerate(drs):
@@ -84,11 +91,11 @@ for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
             ]
         axs[i][k].plot(
             1e6 * np.array(ref['x']), ref['y'], 'bx',
-            label="Reference Solution"
+            label="Reference Solution", markersize=markersize
         )
         axs[i][k].plot(
             1e6 * np.array(ref['x']), [y[0] for y in our], 'g+',
-            label="Our Solution"
+            label="Our Solution", markersize=markersize
         )
         if dr == "H":
             axs[i][k].set_xlabel(r"\( z \)")
@@ -101,20 +108,23 @@ for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
                 min(ref['y']) - 0.1 * refrange,
                 max(ref['y']) + 0.1 * refrange
             ))
-axs[-1][-1].legend()
-for fig in figs:
+        # check conservation
+        # print(PointDiagonalization(mech, temp).get_evects())
+        print("for conservation, all of the following numbers should be zero:")
+        print(np.dot(
+            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).reshape((1, -1)),
+            mech.getB(temp)
+        ))
+
+for ax in axs:
+    ax[-1].legend()
+
+
+for i, fig in enumerate(figs):
     fig.tight_layout()
-
-
-if showfigs():
-    plt.show()
-else:
     for ext in ['svg', 'pdf']:
-        pass
-        #TODO
-#       l2fig.savefig(imgpath("comparison_l2errs.{}".format(ext)))
-#       multfig.savefig(imgpath("comparison_cases.{}".format(ext)))
-#       for i, fig in enumerate(singfigs):
-#           fig.savefig(imgpath("comparison_case{}.{}".format(i+1, ext)))
+        fig.savefig(
+            "img/cyl_multstageverif_nondiag_case{}.{}".format(i+1, ext)
+        )
 
 

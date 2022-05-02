@@ -9,13 +9,19 @@ import numpy as np
 
 from mevlib.scalar import sum_standard, sum_aitken
 from mevlib.scalar import cyl_intgtd_radial_terms, cyl_intgtd_axial_terms
-from mevlib.scalar import psm_intgtd_xdir, psm_intgtd_spec
-from mevlib.scalar import psm_intgtd_diff
-from mevlib.options import imgpath, showfigs
+from mevlib.scalar import psm_intgtd_xdir
+# from mevlib.scalar import psm_intgtd_spec, psm_intgtd_diff
 
 
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=12)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (4.5, 3.5)             # this is bigger than usual
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
 
 
 markers = cycle(['v', '>', '<', '^', 's', 'd', '*', 'X', '+'])
@@ -79,16 +85,16 @@ psm_axial_exact = psm_intgtd_xdir(a2, Lx, Ly, Lz, pexact)
 
 methods = [
     # name, valuefunction, exact, termadj, cost function, number of terms
-#   (
-#       "Cylinder - Radial - Standard",
-#       lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
-#       cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
-#   ),
-#   (
-#       "Cylinder - Radial - Aitken",
-#       lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
-#       cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
-#   ),
+    (
+        "Cylinder - Radial - Standard",
+        lambda tk: sum_standard(cyl_intgtd_radial_terms(a2, R, H, tk)),
+        cyl_radial_exact, lambda tk: tk, cyl_rd_std_cost, cyltrunc
+    ),
+    (
+        "Cylinder - Radial - Aitken",
+        lambda tk: sum_aitken(cyl_intgtd_radial_terms(a2, R, H, tk)),
+        cyl_radial_exact, lambda tk: tk, cyl_rd_akn_cost, cyltrunc
+    ),
     (
         "Cylinder - Axial - Standard",
         lambda tk: sum_standard(cyl_intgtd_axial_terms(a2, R, H, tk)),
@@ -136,9 +142,9 @@ methods = [
 ]
 
 
-fig1, ax1 = plt.subplots(1, 1)
-fig2, ax2 = plt.subplots(1, 1)
-fig3, ax3 = plt.subplots(1, 1)
+fig1, ax1 = plt.subplots(1, 1, figsize=figsize(1, 1))
+fig2, ax2 = plt.subplots(1, 1, figsize=figsize(1, 1))
+fig3, ax3 = plt.subplots(1, 1, figsize=figsize(1, 1))
 for i, (label, method, exact, termadj, cost, truncs) in enumerate(methods):
     mkr = next(markers)
     ax1.semilogy(
@@ -162,24 +168,21 @@ ax1.grid()
 ax1.set_xlabel("Number of Terms")
 ax1.set_ylabel("Relative Error")
 ax1.legend()
-ax1.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 4))
+ax1.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 0))
 ax2.grid()
 ax2.set_xlabel("Estimated Cost")
 ax2.set_ylabel("Relative Error")
 ax2.legend()
-ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 4))
+ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 0))
 ax3.grid()
 ax3.set_xlabel("Number of Terms")
 ax3.set_ylabel("Effectiveness Factor")
 ax3.legend()
 
 
-if not showfigs():
-    for n, fig in [('nterms', fig1), ('cost', fig2), ('efactor', fig3)]:
-        fig.tight_layout()
-        for ext in ['svg', 'pdf']:
-            fig.savefig(imgpath("sumconv-{}.{}".format(n, ext)))
-else:
-    plt.show()
+for n, fig in [('nterms', fig1), ('cost', fig2), ('efactor', fig3)]:
+    fig.tight_layout()
+    for ext in ['svg', 'pdf']:
+        fig.savefig("img/cyl_sumconv_{}.{}".format(n, ext))
 
 
