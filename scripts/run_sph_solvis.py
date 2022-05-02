@@ -5,12 +5,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mevlib.scalar import sph_ptwise
 
-from mevlib.options import imgpath, showfigs
 
-
-plt.rc('font', size=12)
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=18)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (2.75, 2.5)
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
 
 
 R = 120.0
@@ -18,13 +22,15 @@ a2 = 0.04**2
 rs = np.linspace(0.0, R, 300)
 
 
-fig1, ax1 = plt.subplots(1, 1)
+fig1, ax1 = plt.subplots(1, 1, figsize=figsize(1, 1))
 ax1.plot(rs, sph_ptwise(a2, R, rs), 'b-')
+ax1.grid()
 ax1.set_xlabel(r'\( r \)')
-ax1.set_ylabel(r'\( u \)')
+# ax1.set_ylabel(r'\( u \)')
 
 
-fig2, ax2 = plt.subplots(1, 1)
+# figsize modified to get axes closer to square
+fig2, ax2 = plt.subplots(1, 1, figsize=(2.75, 2.25))
 xs = np.linspace(-R, R, 543)
 z = 0.05 * R
 xmesh, ymesh = np.meshgrid(xs, xs)
@@ -36,12 +42,9 @@ ax2.set_ylabel(r'\( y \)')
 fig2.colorbar(clp)
 
 
-if showfigs():
-    plt.show()
-else:
-    for i, fig in enumerate([fig1, fig2]):
-        fig.tight_layout()
-        for ext in ['pdf', 'svg']:
-            fig.savefig(imgpath("sph_solvis-{}.{}".format(i+1, ext)))
+for i, fig in enumerate([fig1, fig2]):
+    fig.tight_layout()
+    for ext in ['pdf', 'svg']:
+        fig.savefig("img/sph_solvis-{}.{}".format(i+1, ext))
 
 

@@ -9,11 +9,17 @@ from mevlib.scalar import psm_ptwise_xdir, psm_ptwise_series
 from mevlib.scalar import psm_spec_coeffs, psm_spec_eval
 from mevlib.scalar import psm_diff_coeffs, psm_diff_axes
 from mevlib.scalar import psm_ptwise_diff2
-from mevlib.options import imgpath, showfigs
 
 
+plt.rc('font', size=10)
 plt.rc('text', usetex=True)
-plt.rc('axes', labelsize=12)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (2.75, 2.5)
+
+def figsize(i, j):
+    return (axsize[0] * j, axsize[1] * i)
 
 
 def clip(arr):
@@ -30,7 +36,7 @@ z = Lz / 3
 
 
 xmesh, zmesh = np.meshgrid(xs, zs)
-slicefig, sliceax = plt.subplots(1, 1, figsize=(3.0, 4.0))
+slicefig, sliceax = plt.subplots(1, 1, figsize=figsize(1, 1))
 cf = sliceax.contourf(
     xmesh, zmesh, np.vectorize(psm_ptwise_series)(
         a2,
@@ -45,7 +51,7 @@ slicefig.tight_layout()
 
 
 xmesh, ymesh = np.meshgrid(xs, ys)
-pcfig, pcaxs = plt.subplots(1, 3, figsize=(9.0, 3.0))
+pcfig, pcaxs = plt.subplots(1, 3, figsize=figsize(1, 3))
 for i, (c1, c2, c3, L1, L2, L3) in enumerate([
     (xmesh, ymesh, z, Lx, Ly, Lz),
     (ymesh, z, xmesh, Ly, Lz, Lx),
@@ -62,7 +68,7 @@ for i, (c1, c2, c3, L1, L2, L3) in enumerate([
 pcfig.tight_layout()
 
 levels = np.linspace(0.0, 1.0, 20, endpoint=True)
-errfig, erraxs = plt.subplots(1, 3, figsize=(9.0, 3.0))
+errfig, erraxs = plt.subplots(1, 3, figsize=figsize(1, 3))
 vals = np.vectorize(psm_ptwise_series)(
     a2, Lx, Ly, Lz, series_trunc, series_trunc, series_trunc, xmesh, ymesh, z
 )
@@ -92,11 +98,8 @@ erraxs[2].set_ylabel(r"\( y \)")
 erraxs[2].set_title("Finite Differences ({} Points)".format(spec_trunc**3))
 
 
-if showfigs():
-    plt.show()
-else:
-    for i, fig in enumerate([slicefig, pcfig, errfig]):
-        for ext in ['pdf', 'svg']:
-            fig.savefig(imgpath("psm_solvis-{}.{}".format(i+1, ext)))
+for i, fig in enumerate([slicefig, pcfig, errfig]):
+    for ext in ['pdf', 'svg']:
+        fig.savefig("img/psm_solvis-{}.{}".format(i+1, ext))
 
 
