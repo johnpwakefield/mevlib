@@ -21,5 +21,10 @@ virtualenv
 
 # scripts that aren't mine
 Integ_MEV_Sol*
+nrel_mat_script
+
+# junk
+.old_files
+setuptools
 
 
