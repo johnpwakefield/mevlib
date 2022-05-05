@@ -202,6 +202,7 @@ def parse_sensible(f, verb=False):
             temperatures = [
                 d['temperature']['start'] + i * step for i in range(num)
             ]
+            tempspacing = "linear"
         elif d['temperature']['type'] == "explicit":
             raise NotImplementedError("Explicit temperatures not implemented.")
         else:
@@ -211,6 +212,7 @@ def parse_sensible(f, verb=False):
             raise SBLParsingException("Temperature type not recognized.")
     else:
         temperatures = None
+        tempspacing = "null"
 
     # read diffusion parameters
     if 'diffusion' in d:
@@ -248,9 +250,9 @@ def parse_sensible(f, verb=False):
         if molweight == 'default':
             molweight == 'specified'
         def checkrow(row):
-            if (
-                len(row)
-                != (1 + (name == 'specified') + (phase == 'specified') + (molweight == 'specified'))
+            if len(row) != (
+                1 + (name == 'specified') + (phase == 'specified')
+                + (molweight == 'specified')
             ):
                 print("Unexpected length of table row.")
                 expected_syms = (
@@ -289,9 +291,13 @@ def parse_sensible(f, verb=False):
         def makespecies(row):
             checkrow(row)
             if getphase(row).strip().lower() == 'g':
-                return gasconstructor(row[0], getname(row), getmolweight(row))
+                return gasconstructor(
+                    row[0], getname(row), getmolweight(row)
+                )
             elif getphase(row).strip().lower() == 's':
-                return solidconstructor(row[0], getname(row), getmolweight(row))
+                return solidconstructor(
+                    row[0], getname(row), getmolweight(row)
+                )
             else:
                 raise SBLParsingException("Phase must be 'g' or 's'.")
         species = [makespecies(row) for row in d['species']['table']]
@@ -339,6 +345,6 @@ def parse_sensible(f, verb=False):
         raise SBLParsingException("Unrecognized reaction type.")
     reactions = [makereaction(row) for row in d['reactions']['table']]
 
-    return precision, shape, temperatures, species, reactions
+    return precision, shape, temperatures, tempspacing, species, reactions
 
 

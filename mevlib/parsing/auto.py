@@ -30,8 +30,9 @@ def parse_attempt(f, ext, verb, allow_partial):
             print("Input successfully parsed as a {} file.".format(name))
         return params
     except (SBLParsingException,) as err:
-        print("File could not be parsed as a {} file.".format(name))
-        print(err)
+        if verb:
+            print("File could not be parsed as a {} file.".format(name))
+            print(err)
         return None
 
 def parse_dynamic(fn, verb, allow_partial=False):

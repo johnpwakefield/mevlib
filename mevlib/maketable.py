@@ -36,7 +36,7 @@ class OutputFormatError(Exception):
 def parse_file(infile, verb=True):
 
     (
-        precision, shape, temperatures, species, reactions
+        precision, shape, temperatures, tempspacing, species, reactions
     ) = parse_dynamic(infile, verb)
     mech = Mechanism(species, reactions)
 
@@ -55,7 +55,7 @@ def parse_file(infile, verb=True):
         mech.findnonreacting(True)
         mech.findproducts(True)
 
-    return precision, shape, temperatures, mech
+    return precision, shape, temperatures, tempspacing, mech
 
 
 def compute_remesh(lambdas):
@@ -115,9 +115,9 @@ def make_table(
             writerate, writeints, writediag, writefull
         ) = True, True, True, True
 
-    precision, shape, Ts, mech = parse_file(src, verb=verb)
+    precision, shape, Ts, Ts_type, mech = parse_file(src, verb=verb)
 
-    diagset = DiagonalizationSet(mech, Ts)
+    diagset = DiagonalizationSet(mech, Ts, spacing_type=Ts_type)
 
     if writeints:
         if intsf is None:

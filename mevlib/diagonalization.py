@@ -35,7 +35,8 @@ def computeintegral(shpe, lams, precision):
         1.0 if lam == 0.0 else shpe.intgtd(lam, precision) for lam in lams
         ])
 
-#TODO rename this to be something like "computeratetransform", add in a method for MEVs or mean values
+# TODO rename this to be something like "computeratetransform", add in a method
+# for MEVs or mean values
 def computetransform(shpe, DboL2, lams, R, Bs, Rinv, precision):
     assert(R.shape[1] == Bs.shape[1])
     assert(R.shape == Rinv.shape)
@@ -90,8 +91,8 @@ class DiagonalizationSet(object):
     Bgs, Bss = None, None
     evals, evects, evectinvs = None, None, None
 
-    def __init__(self, mech, Ts):
-        self.mech, self.Ts = mech, Ts
+    def __init__(self, mech, Ts, spacing_type="null"):
+        self.mech, self.Ts, self.spacing_type = mech, Ts, spacing_type
         Ng, Ns = self.mech.Ng, self.mech.Ns
         Bs = [self.mech.getB(T) for T in self.Ts]
         assert(all([B.shape == (Ng + Ns, Ng) for B in Bs]))
@@ -152,7 +153,7 @@ class DiagonalizationSet(object):
 
 def diag_ptwise_setup(shpe, mech, bdry, T, precision):
     diag = PointDiagonalization(mech, T)
-    ubdry = la.solve(diag.get_evects(), bdry[:mech.Ng].reshape(-1,1))
+    ubdry = la.solve(diag.get_evects(), bdry[:mech.Ng].reshape(-1, 1))
     return shpe, diag.get_evals(), diag.get_evects(), ubdry, precision
 
 def diag_ptwise_eval(setupdata, *coords):
