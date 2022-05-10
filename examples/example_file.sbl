@@ -63,7 +63,8 @@ END
 
 REACTIONS
 
-TYPE ARRCOEFFS  # for A, b, Ea, T0 in A T^b e^(-Ea / R (1/T - 1/T0))
+TYPE ARRCOEFFS  # for A, b, Ea, T0 in 
+                # A T^b e^(-Ea / R (1/T - 1/T0))
 
 # the two following lines have three options for the value:
 #   "default"   use the default; this is used if this line is ommitted

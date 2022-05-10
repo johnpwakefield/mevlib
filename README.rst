@@ -38,7 +38,7 @@ To generate a Matlab lookup tables::
 
     ~ $ cd examples/
 
-    ~ $ mevtable --rates example_file.sbl mat
+    ~ $ mevtable --rate example_file.sbl mat
 
 After doing so one will find ``mevtable_rates.mat`` in the current working
 directory containing lookup table data.
