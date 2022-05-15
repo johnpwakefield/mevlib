@@ -22,7 +22,7 @@ outfmts = {
     'pkl': ('pkl', w_rate_pkl, None,       None,       None      ), #noqa E202
     # TODO add python module
 }
-OUTNAME = "mevtable_{}.{}"
+OUTSUFFIX = "mevtable_{}.{}"
 
 
 # there are three things we might want to write here: effectiveness factors,
@@ -97,12 +97,19 @@ def lookup_outputformat(fmt, verb=False):
 
 
 def make_table(
-    src, fmt,
+    src, outbase, fmt,
     writeall, writerate, writeints, writediag, writefull,
     verb
 ):
 
     ext, ratef, intsf, diagf, fullf = lookup_outputformat(fmt)
+
+    def outname(name, ext):
+        if outbase[-1] == '_':
+            optchar = ''
+        else:
+            optchar = '_'
+        return outbase + optchar + OUTSUFFIX.format(name, ext)
 
     if not any([
         writeall, writerate, writeints, writediag, writefull
@@ -131,7 +138,7 @@ def make_table(
                 print("Final mesh has {} lambda values.".format(len(lambdas)))
                 print("Computing integrals...")
             ints = compute_integrals(lambdas, shape, precision)
-            intsf(OUTNAME.format('ints', ext), lambdas, ints, verb=verb)
+            intsf(outname('ints', ext), lambdas, ints, verb=verb)
 
     for name, longname, reqd, outf in [
         ('rate', 'rates',                writerate, ratef),
@@ -146,11 +153,6 @@ def make_table(
             else:
                 if verb:
                     print("Computing {}...".format(longname))
-                outf(
-                    "mevtable_{}.{}".format(name, ext),
-                    diagset, shape, precision, verb=verb
-                )
-
-    sys.exit(0)
+                outf(outname(name, ext), diagset, shape, precision, verb=verb)
 
 
