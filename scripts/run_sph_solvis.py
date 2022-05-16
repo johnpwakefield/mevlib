@@ -26,7 +26,7 @@ fig1, ax1 = plt.subplots(1, 1, figsize=figsize(1, 1))
 ax1.plot(rs, sph_ptwise(a2, R, rs), 'b-')
 ax1.grid()
 ax1.set_xlabel(r'\( r \)')
-# ax1.set_ylabel(r'\( u \)')
+ax1.set_ylabel(r'\( \hat{Y} \)')
 
 
 # figsize modified to get axes closer to square
@@ -39,7 +39,8 @@ umesh[R**2 < xmesh**2 + ymesh**2 + z**2] = np.nan
 clp = ax2.contourf(xmesh, ymesh, umesh)
 ax2.set_xlabel(r'\( x \)')
 ax2.set_ylabel(r'\( y \)')
-fig2.colorbar(clp)
+cbar = fig2.colorbar(clp)
+cbar.set_label(r"\( \hat{Y} \)")
 
 
 for i, fig in enumerate([fig1, fig2]):

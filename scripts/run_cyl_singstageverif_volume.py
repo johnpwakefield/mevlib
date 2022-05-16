@@ -16,7 +16,9 @@ from mevlib.shapes import Cylinder
 plt.rc('font', size=10)
 plt.rc('text', usetex=True)
 plt.rc('axes', labelsize=10)
-plt.rc('legend', fontsize=10)
+plt.rc('legend', fontsize=8)
+plt.rc('xtick', labelsize=8)
+plt.rc('ytick', labelsize=8)
 
 axsize = (2.75, 2.5)
 arscale = 0.6
@@ -69,6 +71,8 @@ for i, ((shp, phi2), fn) in enumerate(zip(pcases, fns)):
         )
     pkl = pkgutil.get_data('mevlib', fn)
     refsoln = pickle.loads(pkl)
+    dr = refsoln['rmesh'][1, 0] - refsoln['rmesh'][0, 0]
+    dz = refsoln['zmesh'][0, 1] - refsoln['zmesh'][0, 0]
     oursoln = solfunc(refsoln['rmesh'], refsoln['zmesh'])
     versoln = refsoln['umesh']
     hi1, hi2 = np.array(refsoln['rmesh'].shape) - 1
@@ -85,7 +89,7 @@ for i, ((shp, phi2), fn) in enumerate(zip(pcases, fns)):
     ]
     wterrs[i] = [
         np.sqrt(sum([
-            2 * np.pi * r * (solfunc(r, z, n=n, k=2*n) - u)**2
+            4 * np.pi * r * dr * dz * (solfunc(r, z, n=n, k=2*n) - u)**2
             for r, z, u in zip(*map(lambda x: x.flatten(), [
                 refsoln['rmesh'][1:hi1, 1:hi2],
                 refsoln['zmesh'][1:hi1, 1:hi2],
@@ -123,6 +127,8 @@ for i, ((shp, phi2), fn) in enumerate(zip(pcases, fns)):
             ax.set_ylabel(r"\( z \)")
         # these colorbars are the same for each set
         cbs = [plt.colorbar(cm, ax=ax) for ax, cm in zip([lax, rax], cms)]
+        for c in cbs:
+            c.set_label(r"\( \hat{Y} \)")
     for ax in multaxs[i, :]:
         ax.set_xlabel(r"\( r \)")
         ax.set_ylabel(r"\( z \)")
@@ -131,25 +137,30 @@ for fig in singfigs:
     fig.tight_layout()
 
 
-l2fig, l2ax = plt.subplots(1, 1, figsize=figsize(2, 2))
+l2fig, l2ax = plt.subplots(1, 1, figsize=figsize(1, 1))
 for i, (errs, mkr) in enumerate(zip(l2errs, ['x', 'o', '+', '<', '>'])):
     l2ax.semilogy(
-        Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
+        Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1),
+        markersize=2.8
     )
 l2ax.grid()
 l2ax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
 l2ax.set_ylabel(r"\( L^2 \) error")
 l2ax.legend()
+l2fig.tight_layout()
 
-wtfig, wtax = plt.subplots(1, 1, figsize=figsize(2, 2))
+
+wtfig, wtax = plt.subplots(1, 1, figsize=figsize(1, 1))
 for i, (errs, mkr) in enumerate(zip(wterrs, ['x', 'o', '+', '<', '>'])):
     wtax.semilogy(
-        Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1)
+        Ns, errs, 'C{}'.format(i+1) + mkr, label="Case {}".format(i + 1),
+        markersize=2.8
     )
 wtax.grid()
 wtax.set_xlabel(r"Number of terms \( N \) (\( K = 2 N \))")
 wtax.set_ylabel(r"\( L^2 \) error")
 wtax.legend()
+wtfig.tight_layout()
 
 
 for ext in ['svg', 'pdf']:

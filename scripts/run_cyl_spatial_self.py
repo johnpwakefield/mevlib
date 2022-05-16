@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 
+# there's a lot of screwy things in this script
+
+
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import colors       #noqa W0611
@@ -50,7 +53,11 @@ singfigs, singaxs = zip(*[
 ])
 for i, (shp, phi2) in enumerate(cases):
     def solfunc(r, z, k):
-        return np.vectorize(shp.ptwise_axial)(phi2, k, r, z)
+        return (
+            np.vectorize(shp.ptwise_axial)(phi2, k, r, z)
+            +
+            np.vectorize(shp.ptwise_radial)(phi2, k, r, z)
+        )
     rmesh, zmesh = np.meshgrid(
         np.linspace(0.0, shp.R, Nr), np.linspace(0.0, shp.H, Nh)
     )
@@ -59,21 +66,23 @@ for i, (shp, phi2) in enumerate(cases):
     hi1, hi2 = np.array(rmesh.shape) - 1
     l2errs[i] = [
         np.sqrt(np.sum((solfunc(rmesh, zmesh, k) - refsoln).flatten()**2))
+        * np.sqrt(shp.R / Nr * shp.H / Nh)
         for k in Ks
     ]
     wterrs[i] = [
         np.sqrt(np.sum((
-            2 * np.pi * rmesh * (solfunc(rmesh, zmesh, k) - refsoln)**2
+            4 * np.pi * rmesh**2 * shp.R / Nr * shp.H / Nh
+            * (solfunc(rmesh, zmesh, k) - refsoln)**2
         ).flatten()))
         for k in Ks
     ]
     cm = singaxs[i].contourf(rmesh, zmesh, solfunc(rmesh, zmesh, kspatial))
     singaxs[i].set_xlabel(r"\( r \)")
     singaxs[i].set_ylabel(r"\( z \)")
-    plt.colorbar(cm, ax=singaxs[i])
+    cbar = plt.colorbar(cm, ax=singaxs[i])
+    cbar.set_label(r"\( \hat{Y} \)")
 for fig in singfigs:
     fig.tight_layout()
-
 
 l2fig, l2ax = plt.subplots(1, 1, figsize=figsize(2, 2))
 for i, (errs, mkr) in enumerate(zip(l2errs, ['x', 'o', '+', '<', '>'])):

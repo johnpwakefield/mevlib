@@ -38,7 +38,7 @@ Hs = ratios * Rs
 
 # parse mechanism
 mechconf = pkgutil.get_data('mevlib', mechfile)
-precision, _, temperatures, species, reactions = parse_attempt(
+precision, _, temperatures, tempspacing, species, reactions = parse_attempt(
     StringIO(mechconf.decode('utf-8')), '.sbl', True, True
 )
 if precision is None:

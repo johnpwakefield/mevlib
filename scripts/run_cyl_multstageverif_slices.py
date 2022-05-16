@@ -51,7 +51,7 @@ figs, axs = zip(*[
 for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
     # parse test mechanism
     mechconf = pkgutil.get_data('mevlib', mechfile)
-    precision, shape, temperatures, species, reactions = parse_attempt(
+    precision, shape, temperatures, _, species, reactions = parse_attempt(
         StringIO(mechconf.decode('utf-8')), '.sbl', True, True
     )
     if precision is None:

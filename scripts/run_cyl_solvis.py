@@ -86,27 +86,30 @@ for i, trunc in enumerate(truncs):
 
 fig4, axs4 = plt.subplots(2, 2, figsize=figsize(2, 2))
 fig4_notitle, axs4_notitle = plt.subplots(2, 2, figsize=figsize(2, 2))
-for n, (fig, axs) in [(fig4, axs4), (fig4_notitle, axs4_notitle)]:
+for n, (fig, axs) in enumerate([(fig4, axs4), (fig4_notitle, axs4_notitle)]):
     for i, f in enumerate(map(
         np.vectorize, [cyl.ptwise_radial, cyl.ptwise_axial]
     )):
         nd = "First" if i == 0 else "Second"
-        axs4[i, 0].plot(rs, f(a2, slicetrunc, rs, H/3))
-        axs4[i, 0].set_xlabel(r"\( r \)")
-        axs4[i, 0].set_ylim((-0.5, 1.5))
+        axs[i, 0]
+        axs[i, 0].plot(rs, f(a2, slicetrunc, rs, H/3))
+        axs[i, 0].set_ylim((-0.5, 1.5))
+        axs[i, 0].set_xlabel(r"\( r \)")
+        axs[i, 0].set_ylabel(r"\( \hat{Y} \)")
         if n == 0:
-            axs4[i, 0].set_title(
+            axs[i, 0].set_title(
                 r"{} sum, slice at \( z = H / 3 \)".format(nd)
             )
-        axs4[i, 1].plot(zs, f(a2, slicetrunc, R/3, zs))
-        axs4[i, 1].set_xlabel(r"\( z \)")
-        axs4[i, 1].set_ylim((-0.5, 1.5))
+        axs[i, 1].plot(zs, f(a2, slicetrunc, R/3, zs))
+        axs[i, 1].set_ylim((-0.5, 1.5))
+        axs[i, 1].set_xlabel(r"\( z \)")
+        axs[i, 1].set_ylabel(r"\( \hat{Y} \)")
         if n == 0:
-            axs4[i, 1].set_title(
+            axs[i, 1].set_title(
                 r"{} sum, slice at \( r = R / 3 \)".format(nd)
             )
-        axs4[i, 0].grid()
-        axs4[i, 1].grid()
+        axs[i, 0].grid()
+        axs[i, 1].grid()
 
 
 fig5, ax5 = plt.subplots(1, 1, figsize=figsize(1, 1))
@@ -118,7 +121,8 @@ vals = np.maximum(np.minimum(vals, 1.5), -0.5)
 cf = ax5.contourf(rmesh, zmesh, vals)
 ax5.set_xlim(xlims)
 ax5.set_ylim(ylims)
-fig5.colorbar(cf, ax=ax5)
+cbar = fig5.colorbar(cf, ax=ax5)
+cbar.set_label(r"\( \hat{Y} \)")
 ax5.set_xlabel(r"\( r \)")
 ax5.set_ylabel(r"\( z \)")
 

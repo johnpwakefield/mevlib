@@ -67,7 +67,8 @@ annotposns = [(8.0, 0.31), (3.0, 0.44), (2.0, 0.64), (4.0, 0.95)]
 for line, xy in zip(lines, annotposns):
     ax3.annotate(
         line[0].get_label(), xy=xy, fontsize=10,
-        color=line[0].get_color()
+        #color=line[0].get_color()
+        color="black"
     )
 ax3.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 ax3.grid()
