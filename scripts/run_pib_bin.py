@@ -13,22 +13,32 @@ from mevlib.outfmt.binary import mgn_ints, mgn_diag
 import matplotlib.pyplot as plt
 
 
+#TODO should this script just be scrapped?
 
+
+plt.rc('font', size=10)
+plt.rc('text', usetex=True)
+plt.rc('axes', labelsize=10)
+plt.rc('legend', fontsize=10)
+
+axsize = (3.0, 2.5)
 
 
 np.set_printoptions(precision=4)
 
 
-
 # constants
 
-intsfile = "mevtable_ints.dat"
-diagfile = "mevtable_diag.dat"
+intsfile = "example_sph_mevtable_ints.dat"
+diagfile = "example_sph_mevtable_diag.dat"
+
 SYMBLEN = 8     # length of species identifier string
 voidage = 0.4
 VOL = 1.0
 
+y0 = [0.8, 0.0, 0.0, 0.0, 0.0, 0.0]
 
+T = 600.0
 
 
 # read binary files
@@ -38,6 +48,7 @@ with open(intsfile, 'rb') as f:
     if mgn != mgn_ints:
         raise Exception("{} is not a diag file.".format(diagfile))
     M, = unpack('<i', f.read(4))
+    f.read(4)
     tmods = np.fromfile(f, dtype=np.float64, count=M, offset=0)
     seffs = np.fromfile(f, dtype=np.float64, count=M, offset=0)
     if len(f.read(1)) != 0:
@@ -52,14 +63,14 @@ with open(diagfile, 'rb') as f:
     Ng, = unpack('<B', f.read(1))
     Ns, = unpack('<B', f.read(1))
     M, = unpack('<H', f.read(2))
-    print(Ng, Ns)
+    f.read(6)
     names = [
         ''.join(
             map(lambda x: x.decode('utf-8'), unpack('<8c', f.read(8)))
         ).strip()
         for i in range(Ng + Ns)
     ]
-    print(names)
+    molwghts = np.fromfile(f, dtype=np.float64, count=(Ng+Ns), offset=0)
     temps = np.fromfile(f, dtype=np.float64, count=M, offset=0)
     Ds, lams, Rs, BsRs = [], [], [], []
     for i in range(M):
@@ -75,15 +86,21 @@ with open(diagfile, 'rb') as f:
 
 # setup equations
 
-y0 = [0.9, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-T = 600.0
-
 def rhs(t, m):
     i = np.searchsorted(temps, T) + 1
     Zfree = solve_triangular(Rs[i], m[:-1], lower=True)
+    if deac:
+        yk = m[-1] / cat_mass   # this is not a mass fraction, but is what was used in the CEJ paper
+        psi = (
+            (1 + YK_coeff * 100 * yk)**(-1.6)
+            / (1 + KA * (WA + WR + WASP))
+            / (1 + KN * (WN / WCO) * t)
+        )
+        assert(0 < psi and psi < 1)
+    else:
+        psi = 1.0
     mult = np.array([1.0 if lam == 0.0 else sslookup(lam) for lam in lams[i]])
-    Mdot = -voidage * VOL * Ds[i] * np.dot(
+    Mdot = -psi * voidage * VOL * Ds[i] * np.dot(
         np.vstack((np.dot(Rs[i], np.diag(lams[i])), BsRs[i])),
         mult * Zfree
     )
@@ -92,19 +109,24 @@ def rhs(t, m):
 
 # run pib
 
-soln = solve_ivp(rhs, [0.0, 1000.0], y0, dense_output=True, atol=1e-6)
+soln = solve_ivp(rhs, [0.0, 1200.0], y0, dense_output=True, atol=1e-9)
 
 
 # make plots
 
-fig, ax = plt.subplots(1, 1)
+fig, ax = plt.subplots(1, 1, figsize=axsize)
+logvals = np.exp(np.linspace(np.log(0.1), np.log(1000.0), 200))
 for i, name in enumerate(names):
-    ax.plot(soln.t, soln.y[i, :], label=name)
+    #ax.plot(soln.t, soln.y[i, :], label=name)
+    solninterp = interp1d(soln.t, soln.y[i, :], kind='cubic')
+    ax.semilogx(logvals, [solninterp(t) for t in logvals], label=name)
 ax.set_xlabel(r'\( t \)')
-ax.legend()
+ax.grid()
+fig.tight_layout()      # call before legend
+ax.legend(loc="upper center", ncol=3)
 
 
-plt.show()
-
+for ext in ["pdf", "svg"]:
+    fig.savefig("img/pib_bin.{}".format(ext))
 
 

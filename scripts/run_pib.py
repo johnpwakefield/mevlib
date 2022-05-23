@@ -19,7 +19,7 @@ plt.rc('axes', labelsize=10)
 plt.rc('legend', fontsize=10)
 np.set_printoptions(precision=4)
 
-axsize = (3.0, 2.5)
+axsize = (2.5, 2.75)
 
 def figsize(i, j):
     return (axsize[0] * j, axsize[1] * i)
