@@ -22,7 +22,7 @@ outfmts = {
     'pkl': ('pkl', w_rate_pkl, None,       None,       None      ), #noqa E202
     # TODO add python module
 }
-OUTNAME = "mevtable_{}.{}"
+OUTSUFFIX = "mevtable_{}.{}"
 
 
 # there are three things we might want to write here: effectiveness factors,
@@ -36,7 +36,7 @@ class OutputFormatError(Exception):
 def parse_file(infile, verb=True):
 
     (
-        precision, shape, temperatures, species, reactions
+        precision, shape, temperatures, tempspacing, species, reactions
     ) = parse_dynamic(infile, verb)
     mech = Mechanism(species, reactions)
 
@@ -55,7 +55,7 @@ def parse_file(infile, verb=True):
         mech.findnonreacting(True)
         mech.findproducts(True)
 
-    return precision, shape, temperatures, mech
+    return precision, shape, temperatures, tempspacing, mech
 
 
 def compute_remesh(lambdas):
@@ -97,12 +97,19 @@ def lookup_outputformat(fmt, verb=False):
 
 
 def make_table(
-    src, fmt,
+    src, outbase, fmt,
     writeall, writerate, writeints, writediag, writefull,
     verb
 ):
 
     ext, ratef, intsf, diagf, fullf = lookup_outputformat(fmt)
+
+    def outname(name, ext):
+        if outbase[-1] == '_':
+            optchar = ''
+        else:
+            optchar = '_'
+        return outbase + optchar + OUTSUFFIX.format(name, ext)
 
     if not any([
         writeall, writerate, writeints, writediag, writefull
@@ -115,9 +122,9 @@ def make_table(
             writerate, writeints, writediag, writefull
         ) = True, True, True, True
 
-    precision, shape, Ts, mech = parse_file(src, verb=verb)
+    precision, shape, Ts, Ts_type, mech = parse_file(src, verb=verb)
 
-    diagset = DiagonalizationSet(mech, Ts)
+    diagset = DiagonalizationSet(mech, Ts, spacing_type=Ts_type)
 
     if writeints:
         if intsf is None:
@@ -131,7 +138,7 @@ def make_table(
                 print("Final mesh has {} lambda values.".format(len(lambdas)))
                 print("Computing integrals...")
             ints = compute_integrals(lambdas, shape, precision)
-            intsf(OUTNAME.format('ints', ext), lambdas, ints, verb=verb)
+            intsf(outname('ints', ext), lambdas, ints, verb=verb)
 
     for name, longname, reqd, outf in [
         ('rate', 'rates',                writerate, ratef),
@@ -146,11 +153,6 @@ def make_table(
             else:
                 if verb:
                     print("Computing {}...".format(longname))
-                outf(
-                    "mevtable_{}.{}".format(name, ext),
-                    diagset, shape, precision, verb=verb
-                )
-
-    sys.exit(0)
+                outf(outname(name, ext), diagset, shape, precision, verb=verb)
 
 

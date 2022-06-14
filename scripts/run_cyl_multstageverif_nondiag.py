@@ -53,7 +53,7 @@ figs, axs = zip(*[
 for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
     # parse test mechanism
     mechconf = pkgutil.get_data('mevlib', mechfile)
-    precision, shape, temperatures, species, reactions = parse_attempt(
+    precision, shape, temperatures, _, species, reactions = parse_attempt(
         StringIO(mechconf.decode('utf-8')), '.sbl', True, True
     )
     if precision is None:
@@ -113,7 +113,7 @@ for i, ((cyl, temp, bdry), mechfile) in enumerate(zip(cases, mechfiles)):
         print("for conservation, all of the following numbers should be zero:")
         print(np.dot(
             np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0]).reshape((1, -1)),
-            mech.getB(temp)
+            np.dot(np.diag(libDis), mech.getB(temp))
         ))
 
 for ax in axs:

@@ -32,13 +32,13 @@ components = ['S', 'D', 'G', 'LPG', 'DR']
 
 Npts = 201
 ratios = 10**np.linspace(-2.0, 4.0, Npts)
-V = np.pi * (200.0)**3
+V = np.pi * (400.0)**3 / 6
 Rs = (V / (np.pi * ratios))**(1.0/3)
 Hs = ratios * Rs
 
 # parse mechanism
 mechconf = pkgutil.get_data('mevlib', mechfile)
-precision, _, temperatures, species, reactions = parse_attempt(
+precision, _, temperatures, tempspacing, species, reactions = parse_attempt(
     StringIO(mechconf.decode('utf-8')), '.sbl', True, True
 )
 if precision is None:
