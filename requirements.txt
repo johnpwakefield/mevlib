@@ -9,7 +9,7 @@
 wheel
 
 ## standard requirements; most installations should have these ##
-numpy ~= 1.19.5
+numpy ~> 1.21
 matplotlib ~= 3.1.1
 click >= 7.0.0
 # should pyparsing be removed?
