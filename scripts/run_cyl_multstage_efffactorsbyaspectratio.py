@@ -32,7 +32,7 @@ components = ['S', 'D', 'G', 'LPG', 'DR']
 
 Npts = 201
 ratios = 10**np.linspace(-2.0, 4.0, Npts)
-V = np.pi * (200.0)**3
+V = np.pi * (400.0)**3 / 6
 Rs = (V / (np.pi * ratios))**(1.0/3)
 Hs = ratios * Rs
 

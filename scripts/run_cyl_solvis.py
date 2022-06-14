@@ -91,11 +91,12 @@ for n, (fig, axs) in enumerate([(fig4, axs4), (fig4_notitle, axs4_notitle)]):
         np.vectorize, [cyl.ptwise_radial, cyl.ptwise_axial]
     )):
         nd = "First" if i == 0 else "Second"
+        md = "1" if i == 0 else "2"
         axs[i, 0]
         axs[i, 0].plot(rs, f(a2, slicetrunc, rs, H/3))
         axs[i, 0].set_ylim((-0.5, 1.5))
         axs[i, 0].set_xlabel(r"\( r \)")
-        axs[i, 0].set_ylabel(r"\( \hat{Y} \)")
+        axs[i, 0].set_ylabel(r"\( \hat{Y}_" + md + r" \)")
         if n == 0:
             axs[i, 0].set_title(
                 r"{} sum, slice at \( z = H / 3 \)".format(nd)
@@ -103,7 +104,7 @@ for n, (fig, axs) in enumerate([(fig4, axs4), (fig4_notitle, axs4_notitle)]):
         axs[i, 1].plot(zs, f(a2, slicetrunc, R/3, zs))
         axs[i, 1].set_ylim((-0.5, 1.5))
         axs[i, 1].set_xlabel(r"\( z \)")
-        axs[i, 1].set_ylabel(r"\( \hat{Y} \)")
+        axs[i, 1].set_ylabel(r"\( \hat{Y}_" + md + r" \)")
         if n == 0:
             axs[i, 1].set_title(
                 r"{} sum, slice at \( r = R / 3 \)".format(nd)

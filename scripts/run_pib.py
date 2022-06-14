@@ -16,10 +16,10 @@ import matplotlib.pyplot as plt
 plt.rc('font', size=10)
 plt.rc('text', usetex=True)
 plt.rc('axes', labelsize=10)
-plt.rc('legend', fontsize=10)
+plt.rc('legend', fontsize=8)
 np.set_printoptions(precision=4)
 
-axsize = (2.5, 2.75)
+axsize = (2.75, 2.75)
 
 def figsize(i, j):
     return (axsize[0] * j, axsize[1] * i)
@@ -27,15 +27,15 @@ def figsize(i, j):
 
 # constants (all length units in cubic millimeters)
 
-shape = "cyl"
+shape = "sph"
 intsfile = "example_{}_mevtable_ints.dat".format(shape)
 diagfile = "example_{}_mevtable_diag.dat".format(shape)
 SYMBLEN = 8         # length of species identifier string
-GASCONST = 8.3144                           # [Pa m^3 / (K mol)]
+GASCONST = 8.3144                                       # [Pa m^3 / (K mol)]
 voidage = 0.319
-VOL = (750e-6)**3                           # [m^3]
-#pVOL = (np.pi * 80.0**2 * 550.0) * 1e-18    # [m^3]
-pVOL = 4 * np.pi * 200.0**3 / 3 * 1e-18
+VOL = (800e-6)**3                                           # [m^3]
+# for cyl pVOL = (np.pi * 80.0**2 * 550.0) * 1e-18    # [m^3]
+pVOL = np.pi * (400.0e-6)**3 / 6
 assert(pVOL < VOL)
 epsf = (VOL - pVOL) / VOL
 T = 600.0                                                   # [K]
@@ -148,7 +148,8 @@ def massrate(t, m, deac):
     i = ref_i
     Zfree = solve_triangular(Rs[i], massfraction(m)[:-1], lower=True)
     if deac:
-        yk = m[-1] / cat_mass   # this is not a mass fraction, but is what was used in the CEJ paper
+        # this is not a mass fraction, but is what was used in the CEJ paper
+        yk = m[-1] / cat_mass
         psi = (
             (1 + YK_coeff * 100 * yk)**(-1.6)
             / (1 + KA * (WA + WR + WASP))
@@ -195,25 +196,25 @@ for j in range(2):
             ts, [massfraction(m)[i] for m in ms.T], label=name, color=colors[i]
         )
         axs_pibpaper[j].semilogx(
-            ts, [m[i] for m in ms.T], label=name, color=colors[i]
+            ts, [1e9 * m[i] for m in ms.T], label=name, color=colors[i]
         )
         if name != "CK":
             axs[j, 1].loglog(
                 ts, [
                     np.abs(massrate(t, m, deac=j)[i])
-                    / MWs[i] / pVOL
+                    / MWs[i]
                     for t, m in zip(ts, ms.T)
                 ],
                 label=name, color=colors[i]
             )
         if name != "CK":
             axs_sepcke[j, 0].semilogx(
-                ts, [m[i] for m in ms.T],
+                ts, [1e9 * m[i] for m in ms.T],
                 label=name, color=colors[i]
             )
     assert(names[-1] == "CK")
     axs_sepcke[j, 1].loglog(
-        ts, [m[-1] for m in ms.T],
+        ts, [1e9 * m[-1] for m in ms.T],
         label=name, color=colors[len(names) - 1]
     )
     for k in range(2):
@@ -228,26 +229,25 @@ for j in range(2):
     ax_gasdensity.semilogx(
         ts, [gasdensity(m) / rhog0 for m in ms.T], label=deacstring
     )
-    ax_gasdensity.set_title(deacstring)
+    ax_gasdensity.set_ylabel("Fraction of Initial Density")
+    ax_gasdensity.set_xlabel(r"\( t \) [s]")
     axs[j, 0].set_ylabel("Mass Fraction")
     axs[j, 1].set_ylabel(
-        r"Reaction Rate \( \displaystyle \left[\frac{\mathrm{mol}}{\mathrm{s} "
-        r"\, \mathrm{m}^3}\right] \)"
+        r"Reaction Rate \( \displaystyle \left[\frac{\mathrm{mol}}{\mathrm{s}}"
+        r"\right] \)"
     )
     axs[j, 0].set_xlim((1e-3, tf))
     axs[j, 1].set_xlim((1e-2, 1e3))
     axs[j, 0].set_ylim((0.0, 1.0))
-    axs[j, 1].set_ylim((1e-4, 1e2))
-    axs_cons[j, 0].plot(ts, np.sum(ms, axis=0))
+    #axs[j, 1].set_ylim((1e-4, 1e2))
+    axs_cons[j, 0].plot(ts, 1e9 * np.sum(ms, axis=0))
     axs_cons[j, 1].plot(ts, [
-        np.sum(massrate(t, m, deac=j))
-        for t, m in zip(ts, ms.T)
+        1e9 * np.sum(massrate(t, m, deac=j)) for t, m in zip(ts, ms.T)
     ])
-    axs_sepcke[j, 0].set_ylabel("Mass [g]")
-    axs_sepcke[j, 1].set_ylabel("Mass [g]")
-    axs_pibpaper[j].set_ylabel("Mass [g]")
-    axs_pibpaper[j].set_ylabel("Mass [g]")
-    ax_gasdensity.set_ylabel("Fraction of Initial Density")
+    axs_sepcke[j, 0].set_ylabel("Mass [ng]")
+    axs_sepcke[j, 1].set_ylabel("Mass [ng]")
+    axs_pibpaper[j].set_xlim((1e-1, 1e4))
+    axs_pibpaper[j].set_ylabel("Mass [ng]")
 
 
 axs[1, 0].legend()
